@@ -1,0 +1,946 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import {
+  Location01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Add01Icon,
+  RefreshIcon,
+  PencilEdit01Icon,
+  Delete02Icon,
+  Cancel01Icon,
+  Clock01Icon,
+  Link01Icon,
+  CheckmarkCircle01Icon,
+  Coins01Icon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
+import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
+import { useGetPlanningQuery } from '@/store/api/accommodationApi';
+import {
+  useGetConnectionsQuery,
+  useAddConnectionMutation,
+  useRemoveConnectionMutation,
+  useSyncCalendarsMutation,
+  useGetCalendarMonthQuery,
+} from '@/store/api/calendarApi';
+import {
+  useGetHostSchedulesQuery,
+  useCreateScheduleMutation,
+  useUpdateScheduleMutation,
+  useDeleteScheduleMutation,
+} from '@/store/api/scheduleApi';
+import type { Accommodation, AssignedCleaner } from '@/store/types';
+import { resolveAssetUrl } from '@/lib/config';
+import { getApiErrorMessage } from '@/lib/apiError';
+
+const FALLBACK_ROOM =
+  'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=500';
+const avatarFor = (name: string) =>
+  `https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=${encodeURIComponent(name || 'Cleaner')}`;
+
+type PlatformKey = 'airbnb' | 'booking' | 'vrbo';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface MonthData {
+  year: number;
+  month: number;
+  bookings: { _id: string; platform: string; summary?: string; startDate: string; endDate: string }[];
+  schedules: {
+    _id: string;
+    date: string;
+    checkInTime: string;
+    checkOutTime: string;
+    status: string;
+    paymentStatus?: string;
+    booking?: string | null;
+    cleaner?: any;
+  }[];
+}
+
+// Pill colours for a cleaning schedule status.
+const SCHED_STATUS: Record<string, string> = {
+  scheduled: 'bg-[#FFF7E6] text-[#D48806]',
+  accepted: 'bg-[#E5F9F1] text-[#48C79D]',
+  in_progress: 'bg-[#E6F0FF] text-[#0084FF]',
+  proof_submitted: 'bg-[#F3E8FF] text-[#7C3AED]',
+  completed: 'bg-[#E5F9F1] text-[#137333]',
+  refused: 'bg-[#FFF0F0] text-[#FF4D4F]',
+  disputed: 'bg-[#FFF0F0] text-[#FF4D4F]',
+  cancelled: 'bg-gray-100 text-gray-500',
+};
+
+const ringFor = (status: string) => {
+  if (status === 'accepted' || status === 'completed') return 'ring-[#48C79D]';
+  if (status === 'refused' || status === 'disputed') return 'ring-[#FF4D4F]';
+  if (status === 'scheduled') return 'ring-[#D48806]';
+  return 'ring-[#0084FF]';
+};
+
+// Payment state helpers. The cleaner's acceptance is the gate to paying; once
+// the payment is held (or released) the host has paid.
+const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
+const needsPayment = (s: any) => s?.status === 'accepted' && !isPaid(s);
+
+// Small corner badge on a calendar avatar: clock (awaiting), € (pay now),
+// check (paid / accepted-and-paid).
+const badgeFor = (s: any): { icon: any; cls: string } | null => {
+  if (s.status === 'scheduled') return { icon: Clock01Icon, cls: 'bg-[#D48806]' };
+  if (needsPayment(s)) return { icon: Coins01Icon, cls: 'bg-[#0084FF]' };
+  if (isPaid(s) || s.status === 'completed') return { icon: CheckmarkCircle01Icon, cls: 'bg-[#48C79D]' };
+  return null;
+};
+
+// List-view filter tabs → backend `view` buckets. 'all' sends no view param.
+type ListFilter = 'all' | 'awaiting' | 'accepted' | 'pay_now' | 'paid';
+const LIST_FILTERS: { key: ListFilter; labelKey: string }[] = [
+  { key: 'all', labelKey: 'filterAll' },
+  { key: 'awaiting', labelKey: 'filterAwaiting' },
+  { key: 'accepted', labelKey: 'filterAccepted' },
+  { key: 'pay_now', labelKey: 'filterPayNow' },
+  { key: 'paid', labelKey: 'filterPaid' },
+];
+
+const cleanerNameOf = (cl: any, fallback: string) =>
+  cl?.name || `${cl?.firstName ?? ''} ${cl?.lastName ?? ''}`.trim() || fallback;
+
+const cleanerAvatarOf = (cl: any, fallback: string) =>
+  resolveAssetUrl(cl?.profileImage) || avatarFor(cleanerNameOf(cl, fallback));
+
+// Local YYYY-MM-DD (avoids the UTC shift of toISOString on a midnight-local date).
+const toDateInput = (iso?: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+// ─── Schedule create/edit modal ───────────────────────────────────────────────
+interface ModalState {
+  open: boolean;
+  editing?: any | null;
+  date?: string;
+  bookingId?: string;
+  checkIn?: string;
+  checkOut?: string;
+}
+
+function ScheduleModal({
+  state,
+  onClose,
+  accommodationId,
+  cleaners,
+}: {
+  state: ModalState;
+  onClose: () => void;
+  accommodationId: string;
+  cleaners: AssignedCleaner[];
+}) {
+  const t = useTranslations('Planning');
+  const c = useTranslations('Common');
+  const [createSchedule, { isLoading: creating }] = useCreateScheduleMutation();
+  const [updateSchedule, { isLoading: updating }] = useUpdateScheduleMutation();
+
+  const [cleanerId, setCleanerId] = useState('');
+  const [date, setDate] = useState('');
+  const [checkIn, setCheckIn] = useState('11:00');
+  const [checkOut, setCheckOut] = useState('15:00');
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
+
+  const editing = state.editing;
+
+  useEffect(() => {
+    if (!state.open) return;
+    setError('');
+    if (editing) {
+      setCleanerId(String(editing.cleaner?._id || editing.cleaner || ''));
+      setDate(toDateInput(editing.date));
+      setCheckIn(editing.checkInTime || '11:00');
+      setCheckOut(editing.checkOutTime || '15:00');
+      setNotes(editing.notes || '');
+    } else {
+      setCleanerId(cleaners[0]?.cleaner?._id ? String(cleaners[0].cleaner._id) : '');
+      setDate(state.date || '');
+      setCheckIn(state.checkIn || '11:00');
+      setCheckOut(state.checkOut || '15:00');
+      setNotes('');
+    }
+  }, [state.open, editing, state.date, state.checkIn, state.checkOut, cleaners]);
+
+  if (!state.open) return null;
+
+  const submit = async () => {
+    setError('');
+    if (!cleanerId || !date) {
+      setError(t('createError'));
+      return;
+    }
+    try {
+      if (editing) {
+        await updateSchedule({
+          id: editing._id,
+          cleanerId,
+          date,
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
+          notes,
+        }).unwrap();
+      } else {
+        await createSchedule({
+          accommodationId,
+          cleanerId,
+          date,
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
+          notes,
+          bookingId: state.bookingId,
+        }).unwrap();
+      }
+      onClose();
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    }
+  };
+
+  const busy = creating || updating;
+  const inputClass =
+    'h-11 px-4 rounded-xl bg-[#F8F9FA] border border-transparent text-[13px] text-gray-900 focus:bg-white focus:border-[#0084FF] outline-none transition-all w-full';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[20px] w-full max-w-[460px] p-6 shadow-xl animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-[16px] font-bold text-gray-900">
+            {editing ? t('editCleaning') : t('scheduleCleaning')}
+          </h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+            <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" />
+          </button>
+        </div>
+
+        {cleaners.length === 0 ? (
+          <p className="text-[13px] text-gray-500 py-6 text-center">{t('noAcceptedCleaner')}</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-medium text-gray-700">{t('cleaner')}</label>
+              <select value={cleanerId} onChange={(e) => setCleanerId(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
+                {cleaners.map((cl) => (
+                  <option key={cl.assignmentId} value={String(cl.cleaner?._id ?? '')}>
+                    {cleanerNameOf(cl.cleaner, t('cleaner'))} ({cl.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-medium text-gray-700">{t('dateLabel')}</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[12px] font-medium text-gray-700">{t('checkIn')}</label>
+                <input type="time" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className={inputClass} />
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[12px] font-medium text-gray-700">{t('checkOut')}</label>
+                <input type="time" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className={inputClass} />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-medium text-gray-700">{t('notesLabel')}</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('notesPlaceholder')}
+                className="h-20 p-4 rounded-xl bg-[#F8F9FA] border border-transparent text-[13px] text-gray-900 focus:bg-white focus:border-[#0084FF] outline-none resize-none"
+              />
+            </div>
+
+            {error && <p className="text-[12px] text-red-600">{error}</p>}
+
+            <div className="flex gap-3 mt-1">
+              <button onClick={onClose} className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50">
+                {c('cancel')}
+              </button>
+              <button
+                onClick={submit}
+                disabled={busy}
+                className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-medium hover:bg-[#0073E6] disabled:opacity-60"
+              >
+                {busy ? c('saving') : editing ? c('saveChanges') : t('createCleaning')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function PlanningPage() {
+  const t = useTranslations('Planning');
+  const c = useTranslations('Common');
+  const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Deep-link support: /dashboard/planning?filter=paid opens the List view on
+  // that tab (used after a successful payment to land the host on "Paid").
+  const filterParam = searchParams.get('filter') as ListFilter | null;
+  const initialFilter: ListFilter =
+    filterParam && LIST_FILTERS.some((f) => f.key === filterParam) ? filterParam : 'all';
+
+  const [selectedAccId, setSelectedAccId] = useState<string>('');
+  const [viewType, setViewType] = useState<'calendrier' | 'liste'>(
+    filterParam ? 'liste' : 'calendrier',
+  );
+  const [listFilter, setListFilter] = useState<ListFilter>(initialFilter);
+  const [showConnect, setShowConnect] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [icalInputs, setIcalInputs] = useState<Record<PlatformKey, string>>({ airbnb: '', booking: '', vrbo: '' });
+  const [detail, setDetail] = useState<any | null>(null); // schedule shown in the detail popover
+  const [deleteId, setDeleteId] = useState<string | null>(null); // schedule pending delete confirmation
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1); // 1-12
+
+  const [modal, setModal] = useState<ModalState>({ open: false });
+
+  // ── Data ────────────────────────────────────────────────────────────────────
+  const {
+    data: accommodations,
+    isLoading: accLoading,
+    isError: accError,
+    error: accErrObj,
+  } = useGetPlanningQuery({ page: 1, limit: 20 });
+  const accList = (accommodations?.data ?? []) as Accommodation[];
+
+  useEffect(() => {
+    if (!selectedAccId && accList.length > 0) setSelectedAccId(accList[0]._id);
+  }, [accList, selectedAccId]);
+
+  const selectedAcc = accList.find((a) => a._id === selectedAccId);
+  // Memoized so the reference is stable — the schedule modal's reset effect
+  // depends on it and must not re-fire (wiping the form) on background refetches.
+  const acceptedCleaners = useMemo(
+    () => (selectedAcc?.assignedCleaners ?? []).filter((cl) => cl.status === 'accepted' && cl.cleaner),
+    [selectedAcc],
+  );
+
+  const { data: connections, isLoading: connLoading } = useGetConnectionsQuery(selectedAccId, {
+    skip: !selectedAccId,
+  });
+  const { data: monthDataRaw, isFetching: monthLoading } = useGetCalendarMonthQuery(
+    { accommodationId: selectedAccId, year, month },
+    { skip: !selectedAccId },
+  );
+  const { data: scheduleList, isLoading: schedLoading, isFetching: schedFetching } =
+    useGetHostSchedulesQuery(
+      {
+        accommodationId: selectedAccId,
+        limit: 100,
+        view: listFilter === 'all' ? undefined : listFilter,
+      },
+      { skip: !selectedAccId },
+    );
+
+  const [addConnection, { isLoading: adding }] = useAddConnectionMutation();
+  const [removeConnection] = useRemoveConnectionMutation();
+  const [syncCalendars, { isLoading: syncing }] = useSyncCalendarsMutation();
+  const [deleteSchedule, { isLoading: deleting }] = useDeleteScheduleMutation();
+
+  const monthData = monthDataRaw as MonthData | undefined;
+  const hasConnections = (connections?.length ?? 0) > 0;
+  const schedules = scheduleList?.data ?? [];
+
+  const monthLabel = useMemo(
+    () => new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' }),
+    [year, month, locale],
+  );
+
+  // Per-day maps for the calendar grid.
+  const { bookedDays, schedByDay, daysInMonth, leadingBlanks } = useMemo(() => {
+    const dim = new Date(year, month, 0).getDate();
+    const booked = new Set<number>();
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    for (const b of monthData?.bookings ?? []) {
+      const s = startOfDay(new Date(b.startDate));
+      const e = startOfDay(new Date(b.endDate)); // checkout day = free
+      for (let d = 1; d <= dim; d++) {
+        const day = new Date(year, month - 1, d);
+        if (day >= s && day < e) booked.add(d);
+      }
+    }
+    const byDay = new Map<number, MonthData['schedules'][number]>();
+    for (const sc of monthData?.schedules ?? []) {
+      const d = new Date(sc.date);
+      if (d.getFullYear() === year && d.getMonth() === month - 1) byDay.set(d.getDate(), sc);
+    }
+    const firstIdx = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Mon=0
+    return { bookedDays: booked, schedByDay: byDay, daysInMonth: dim, leadingBlanks: firstIdx };
+  }, [monthData, year, month]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+  const goMonth = (delta: number) => {
+    let m = month + delta;
+    let y = year;
+    if (m < 1) { m = 12; y -= 1; }
+    if (m > 12) { m = 1; y += 1; }
+    setMonth(m);
+    setYear(y);
+  };
+
+  const handleSaveConnection = async (platform: PlatformKey) => {
+    setFormError(null);
+    const icalUrl = icalInputs[platform].trim();
+    if (!icalUrl || !selectedAccId) {
+      setFormError(t('enterIcalFirst'));
+      return;
+    }
+    try {
+      await addConnection({ accommodationId: selectedAccId, platform, icalUrl }).unwrap();
+      setIcalInputs((prev) => ({ ...prev, [platform]: '' }));
+      setShowConnect(false);
+    } catch (err) {
+      setFormError(getApiErrorMessage(err));
+    }
+  };
+
+  const handleSync = async () => {
+    if (!selectedAccId) return;
+    try { await syncCalendars(selectedAccId).unwrap(); } catch { /* surfaced via status */ }
+  };
+
+  const openCreate = (opts: { date?: string; bookingId?: string; checkIn?: string; checkOut?: string } = {}) =>
+    setModal({ open: true, editing: null, ...opts });
+  const openEdit = (schedule: any) => setModal({ open: true, editing: schedule });
+
+  // Ask for confirmation via the in-app modal (not the native browser dialog).
+  const handleDeleteSchedule = (id: string) => {
+    setDeleteError(null);
+    setDeleteId(id);
+  };
+
+  // Confirm → delete, then RTK Query tag invalidation refetches the list/calendar.
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setDeleteError(null);
+    try {
+      await deleteSchedule(deleteId).unwrap();
+      setDeleteId(null);
+    } catch (err) {
+      setDeleteError(getApiErrorMessage(err));
+    }
+  };
+
+  // Host pays for an accepted schedule via the existing Stripe payment page.
+  const goPay = (s: any) =>
+    router.push(`/dashboard/housing/${selectedAccId}/payment?scheduleId=${s._id}`);
+
+  const dayInput = (d: number) =>
+    `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  const showConnectForm = !!selectedAccId && !connLoading && (!hasConnections || showConnect);
+
+  return (
+    <main className="w-full px-8 py-10 animate-in fade-in duration-500 mx-auto">
+      <div className="mb-10">
+        <h1 className="text-[32px] font-bold text-gray-900">{t('title')}</h1>
+      </div>
+
+      <div className="flex flex-col xl:flex-row gap-8 items-start">
+
+        {/* Left — accommodation list */}
+        <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-4">
+          {accLoading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-3xl p-3 flex items-center gap-4 bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+                <Skeleton className="w-[140px] h-[90px] rounded-[14px] shrink-0" />
+                <div className="flex flex-col py-1 gap-2">
+                  <Skeleton className="h-3.5 w-32 rounded" />
+                  <Skeleton className="h-3 w-20 rounded" />
+                </div>
+              </div>
+            ))}
+          {accError && !accLoading && (
+            <div className="py-16 text-center text-[13px] text-red-500">{getApiErrorMessage(accErrObj)}</div>
+          )}
+          {!accLoading && !accError && accList.length === 0 && (
+            <div className="py-16 text-center text-[13px] text-gray-400">{t('noProperties')}</div>
+          )}
+          {!accLoading && !accError && accList.map((acc) => {
+            const photo = acc.photos?.[0] ? resolveAssetUrl(acc.photos[0]) : FALLBACK_ROOM;
+            const active = selectedAccId === acc._id;
+            return (
+              <div
+                key={acc._id}
+                onClick={() => { setSelectedAccId(acc._id); setShowConnect(false); }}
+                className={`rounded-3xl p-3 flex items-center gap-4 transition-colors cursor-pointer border ${active ? 'bg-[#F4F4F5] border-transparent' : 'bg-white border-gray-100 hover:border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'}`}
+              >
+                <div className="w-[140px] h-[90px] rounded-[14px] overflow-hidden relative shrink-0">
+                  <AppImage src={photo} alt={acc.name} fill className="object-cover" />
+                </div>
+                <div className="flex flex-col py-1 min-w-0 flex-1">
+                  <h3 className="text-[14px] font-bold text-gray-900 mb-1 truncate">{acc.name}</h3>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <HugeiconsIcon icon={Location01Icon} className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-[12px] text-gray-500 truncate">{acc.city || t('location')}</span>
+                  </div>
+                  {active && (
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/housing/${acc._id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-semibold text-[#0084FF] hover:underline">
+                        {t('viewDetails')}
+                      </Link>
+                      <span className="text-gray-300">·</span>
+                      <Link href={`/dashboard/housing/${acc._id}/edit`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-semibold text-gray-500 hover:underline">
+                        {t('editAccommodation')}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right — view area */}
+        <div className="flex-1 w-full bg-white rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-50 min-h-[600px] p-8">
+
+          {(!selectedAccId || connLoading) && (
+            <div className="w-full h-full flex flex-col items-center justify-center min-h-[400px] text-[13px] text-gray-400">
+              {connLoading ? t('loadingCalendars') : t('selectProperty')}
+            </div>
+          )}
+
+          {/* Connect calendars */}
+          {showConnectForm && (
+            <div className="w-full flex flex-col p-4 max-w-[800px] mx-auto animate-in fade-in duration-300">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-[16px] font-bold text-gray-900">{t('connectMyCalendars')}</h2>
+                {hasConnections && (
+                  <button onClick={() => setShowConnect(false)} className="text-[11px] font-medium text-gray-500 hover:text-gray-800">
+                    {t('backToCalendar')}
+                  </button>
+                )}
+              </div>
+              <p className="text-[12px] text-gray-500 mb-6">{t('pasteIcalDescription')}</p>
+
+              {/* Already-connected feeds */}
+              {hasConnections && (
+                <div className="flex flex-col gap-2 mb-8">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{t('connectedCalendars')}</span>
+                  {connections!.map((conn) => (
+                    <div key={conn._id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#F8F9FA]">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <HugeiconsIcon icon={Link01Icon} className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span className="text-[12px] font-semibold text-gray-800 capitalize">{conn.platform}</span>
+                        <span className="text-[11px] text-gray-400 truncate">{conn.icalUrl}</span>
+                      </div>
+                      <button onClick={() => removeConnection(conn._id)} className="text-[11px] font-medium text-red-500 hover:underline shrink-0 ml-3">
+                        {c('remove')}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {formError && <div className="text-[11px] text-red-500 mb-4">{formError}</div>}
+
+              <div className="flex flex-col gap-6">
+                {([
+                  { name: 'Airbnb', key: 'airbnb' as PlatformKey, color: 'bg-red-50 text-red-500' },
+                  { name: 'Booking.com', key: 'booking' as PlatformKey, color: 'bg-blue-50 text-blue-600' },
+                  { name: 'Vrbo', key: 'vrbo' as PlatformKey, color: 'bg-[#002B49] text-white' },
+                ]).map((plat) => (
+                  <div key={plat.key} className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold ${plat.color}`}>{plat.name[0]}</div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-bold text-gray-900">{plat.name}</span>
+                          <span className="text-[10px] text-gray-400">{t('pasteIcalUrl')}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleSaveConnection(plat.key)}
+                        disabled={adding}
+                        className="h-8 px-4 rounded-lg bg-[#E6F4EA] text-[11px] font-medium text-[#137333] hover:bg-[#CEEAD6] transition-colors disabled:opacity-60"
+                      >
+                        {adding ? t('saving') : c('save')}
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={icalInputs[plat.key]}
+                      onChange={(e) => setIcalInputs((prev) => ({ ...prev, [plat.key]: e.target.value }))}
+                      placeholder={t('urlPlaceholder')}
+                      className="w-full h-10 px-4 rounded-xl border border-gray-200 text-[12px] text-gray-800 outline-none focus:border-gray-400"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Calendar / List */}
+          {selectedAccId && !connLoading && !showConnectForm && (
+            <div className="w-full flex flex-col h-full animate-in fade-in duration-300">
+
+              {/* Segmented control + connect button */}
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex-1 max-w-[420px] mx-auto h-12 bg-[#F4F4F5] rounded-2xl p-1 flex items-center">
+                  <button
+                    onClick={() => setViewType('calendrier')}
+                    className={`flex-1 h-full rounded-xl text-[12px] font-medium transition-colors ${viewType === 'calendrier' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    {t('calendarView')}
+                  </button>
+                  <button
+                    onClick={() => setViewType('liste')}
+                    className={`flex-1 h-full rounded-xl text-[12px] font-medium transition-colors ${viewType === 'liste' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    {t('listView')}
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowConnect(true)}
+                  className="h-10 px-3 rounded-xl bg-white border border-gray-200 flex items-center gap-2 text-[12px] font-medium text-gray-700 hover:bg-gray-50 shrink-0"
+                >
+                  <HugeiconsIcon icon={Link01Icon} className="w-4 h-4 text-gray-400" />
+                  {t('manageCalendars')}
+                </button>
+              </div>
+
+              {/* Month navigation */}
+              <div className="flex items-center justify-between px-4 mb-8">
+                <button onClick={() => goMonth(-1)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400">
+                  <HugeiconsIcon icon={ArrowLeft01Icon} className="w-4 h-4" />
+                </button>
+                <span className="text-[14px] font-bold text-gray-900 capitalize">{monthLabel}</span>
+                <div className="flex items-center gap-1">
+                  <button onClick={handleSync} disabled={syncing} title={t('syncCalendars')} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 disabled:opacity-50">
+                    <HugeiconsIcon icon={RefreshIcon} className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                  </button>
+                  <button onClick={() => goMonth(1)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400">
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Calendar view */}
+              {viewType === 'calendrier' ? (
+                <div className="flex flex-col flex-1">
+                  <div className="grid grid-cols-7 gap-2 text-center mb-4">
+                    {(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).map((day) => (
+                      <span key={day} className="text-[10px] font-bold text-gray-400">{t(`weekday.${day}`)}</span>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {Array.from({ length: leadingBlanks }).map((_, i) => <div key={`b${i}`} />)}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const d = i + 1;
+                      const sched = schedByDay.get(d);
+                      const booked = bookedDays.has(d);
+                      return (
+                        <div
+                          key={d}
+                          className={`relative h-[70px] rounded-xl border flex flex-col items-center pt-1.5 ${booked ? 'bg-[#F4F4F5] border-transparent' : 'border-gray-100'}`}
+                        >
+                          <span className="text-[11px] font-medium text-gray-600">{d}</span>
+                          {sched ? (
+                            <button
+                              onClick={() => setDetail(sched)}
+                              title={t(`status.${sched.status}` as any)}
+                              className="mt-1.5 relative"
+                            >
+                              <div className={`w-8 h-8 rounded-full overflow-hidden relative ring-2 ${ringFor(sched.status)}`}>
+                                <AppImage src={cleanerAvatarOf(sched.cleaner, t('cleaner'))} alt="cleaner" fill className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
+                              </div>
+                              {(() => {
+                                const badge = badgeFor(sched);
+                                return badge ? (
+                                  <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white ${badge.cls}`}>
+                                    <HugeiconsIcon icon={badge.icon} className="w-2.5 h-2.5 text-white" />
+                                  </span>
+                                ) : null;
+                              })()}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openCreate({ date: dayInput(d) })}
+                              disabled={acceptedCleaners.length === 0}
+                              className="mt-1.5 w-7 h-7 rounded-full bg-white border border-[#10B981] flex items-center justify-center text-[#10B981] hover:bg-green-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <HugeiconsIcon icon={Add01Icon} className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => openCreate()}
+                    disabled={acceptedCleaners.length === 0}
+                    className="mt-8 w-full h-12 bg-[#007AFF] text-white text-[13px] font-medium rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />
+                    {t('addManualCleaning')}
+                  </button>
+                  {acceptedCleaners.length === 0 && (
+                    <p className="text-[11px] text-gray-400 text-center mt-3">{t('noAcceptedCleaner')}</p>
+                  )}
+                </div>
+              ) : (
+                /* List view — all cleanings for this accommodation */
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[13px] font-bold text-gray-900">{t('allCleanings')}</span>
+                    <button
+                      onClick={() => openCreate()}
+                      disabled={acceptedCleaners.length === 0}
+                      className="h-9 px-4 rounded-xl bg-[#0084FF] text-white text-[12px] font-medium hover:bg-[#0073E6] flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <HugeiconsIcon icon={Add01Icon} className="w-3.5 h-3.5" />
+                      {t('scheduleCleaning')}
+                    </button>
+                  </div>
+
+                  {/* Status filter tabs */}
+                  <div className="flex items-center gap-2 mb-5 flex-wrap">
+                    {LIST_FILTERS.map((f) => {
+                      const activeTab = listFilter === f.key;
+                      return (
+                        <button
+                          key={f.key}
+                          onClick={() => setListFilter(f.key)}
+                          className={`h-8 px-3.5 rounded-full text-[12px] font-medium transition-colors ${
+                            activeTab
+                              ? 'bg-gray-900 text-white'
+                              : 'bg-[#F4F4F5] text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {t(f.labelKey as any)}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex flex-col gap-3 overflow-y-auto pr-1 pb-2">
+                    {(schedLoading || schedFetching) &&
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl">
+                          <div className="flex items-center gap-4">
+                            <SkeletonCircle size={40} />
+                            <div className="flex flex-col gap-2">
+                              <Skeleton className="h-3 w-40 rounded" />
+                              <Skeleton className="h-3 w-24 rounded" />
+                            </div>
+                          </div>
+                          <Skeleton className="h-7 w-24 rounded-full" />
+                        </div>
+                      ))}
+
+                    {!schedLoading && !schedFetching && schedules.length === 0 && (
+                      <div className="py-16 text-center text-[13px] text-gray-400">
+                        {listFilter === 'all' ? t('noSchedules') : t('noSchedulesForFilter')}
+                      </div>
+                    )}
+
+                    {!schedLoading && !schedFetching && schedules.map((s: any) => {
+                      const editable = s.status === 'scheduled';
+                      const dateLabel = new Date(s.date).toLocaleDateString(locale, {
+                        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+                      });
+                      return (
+                        <div key={s._id} className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl hover:border-gray-200 transition-colors">
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 ring-1 ring-gray-100">
+                              <AppImage src={cleanerAvatarOf(s.cleaner, t('cleaner'))} alt="cleaner" fill className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[13px] font-bold text-gray-900 truncate">{cleanerNameOf(s.cleaner, t('cleaner'))}</span>
+                              <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                                <span>{dateLabel}</span>
+                                <span className="text-gray-300">·</span>
+                                <span className="inline-flex items-center gap-1">
+                                  <HugeiconsIcon icon={Clock01Icon} className="w-3 h-3" />
+                                  {s.checkInTime}–{s.checkOutTime}
+                                </span>
+                                {s.booking && (
+                                  <>
+                                    <span className="text-gray-300">·</span>
+                                    <span>{t('linkedToBooking')}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isPaid(s) && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E5F9F1] text-[#137333]">
+                                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-3 h-3" />
+                                {t('paid')}
+                              </span>
+                            )}
+                            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${SCHED_STATUS[s.status] ?? SCHED_STATUS.scheduled}`}>
+                              {t(`status.${s.status}` as any)}
+                            </span>
+                            {needsPayment(s) && (
+                              <button onClick={() => goPay(s)} className="h-8 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center gap-1">
+                                <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
+                                {t('payNow')}
+                              </button>
+                            )}
+                            {editable && (
+                              <>
+                                <button onClick={() => openEdit(s)} title={c('edit')} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700">
+                                  <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => handleDeleteSchedule(s._id)} title={c('delete')} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                  <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {monthLoading && viewType === 'calendrier' && (
+                <p className="text-[11px] text-gray-400 text-center mt-2">{c('loading')}</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ScheduleModal
+        state={modal}
+        onClose={() => setModal({ open: false })}
+        accommodationId={selectedAccId}
+        cleaners={acceptedCleaners}
+      />
+
+      {/* Calendar cell detail popover */}
+      {detail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200" onClick={() => setDetail(null)}>
+          <div className="bg-white rounded-[20px] w-full max-w-[400px] p-6 shadow-xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[16px] font-bold text-gray-900">{t('cleaningDetails')}</h3>
+              <button onClick={() => setDetail(null)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-12 h-12 rounded-full overflow-hidden relative shrink-0 ring-2 ${ringFor(detail.status)}`}>
+                <AppImage src={cleanerAvatarOf(detail.cleaner, t('cleaner'))} alt="cleaner" fill className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[14px] font-bold text-gray-900 truncate">{cleanerNameOf(detail.cleaner, t('cleaner'))}</span>
+                <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
+                  <HugeiconsIcon icon={Clock01Icon} className="w-3.5 h-3.5" />
+                  {new Date(detail.date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })} · {detail.checkInTime}–{detail.checkOutTime}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mb-5">
+              <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${SCHED_STATUS[detail.status] ?? SCHED_STATUS.scheduled}`}>
+                {t(`status.${detail.status}` as any)}
+              </span>
+              {isPaid(detail) && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E5F9F1] text-[#137333]">
+                  <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-3 h-3" />
+                  {t('paid')}
+                </span>
+              )}
+            </div>
+
+            {detail.status === 'scheduled' && (
+              <p className="text-[12px] text-gray-500 mb-4">{t('awaitingPayHint')}</p>
+            )}
+            {needsPayment(detail) && (
+              <p className="text-[12px] text-gray-500 mb-4">{t('acceptedPayHint')}</p>
+            )}
+
+            <div className="flex gap-2">
+              {needsPayment(detail) && (
+                <button onClick={() => goPay(detail)} className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2">
+                  <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+                  {t('payNow')}
+                </button>
+              )}
+              {detail.status === 'scheduled' && (
+                <>
+                  <button onClick={() => { const s = detail; setDetail(null); openEdit(s); }} className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+                    <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
+                    {c('edit')}
+                  </button>
+                  <button onClick={() => { const id = detail._id; setDetail(null); handleDeleteSchedule(id); }} className="h-11 px-4 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center">
+                    <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteId && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200"
+          onClick={() => !deleting && setDeleteId(null)}
+        >
+          <div
+            className="bg-white rounded-[20px] w-full max-w-95 p-6 shadow-xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-[#FFF0F0] flex items-center justify-center mb-4">
+                <HugeiconsIcon icon={Delete02Icon} className="w-5 h-5 text-[#FF4D4F]" />
+              </div>
+              <h3 className="text-[16px] font-bold text-gray-900 mb-1.5">{t('deleteCleaningTitle')}</h3>
+              <p className="text-[12px] text-gray-500 leading-snug mb-5">{t('deleteCleaningDesc')}</p>
+            </div>
+
+            {deleteError && <p className="text-[12px] text-red-600 text-center mb-4">{deleteError}</p>}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+                className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              >
+                {c('cancel')}
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 h-11 rounded-xl bg-[#FF4D4F] text-white text-[13px] font-medium hover:bg-[#E64345] disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {deleting ? t('deleting') : c('delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}

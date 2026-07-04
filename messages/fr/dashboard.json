@@ -1,0 +1,41 @@
+{
+  "Dashboard": {
+    "nav": {
+      "home": "Accueil",
+      "planning": "Planning",
+      "housing": "Logements",
+      "message": "Messages",
+      "settings": "Paramètres"
+    },
+    "footer": {
+      "rights": "© {year} Gestlio. Tous droits réservés.",
+      "privacyPolicy": "Politique de confidentialité",
+      "termsOfService": "Conditions d'utilisation",
+      "legalNotice": "Mentions légales"
+    },
+    "home": {
+      "title": "Accueil",
+      "scheduleCleaning": "Planifier un ménage",
+      "addHousekeeper": "Ajouter un agent d'entretien",
+      "recommendedTitle": "Planning recommandé",
+      "recommendedSubtitle": "Vérifiez les détails et validez pour lancer la mission.",
+      "accommodationFallback": "Logement",
+      "nextCleaning": "Prochain ménage à planifier",
+      "dateLabel": "Date :",
+      "timeSlotLabel": "Créneau horaire :",
+      "assignedCleaner": "Agent assigné",
+      "noRecommendedLabel": "Aucun ménage recommandé",
+      "upToDate": "Vous êtes à jour ! Tous vos prochains",
+      "cleaningsScheduled": "ménages sont planifiés",
+      "todoTitle": "À faire",
+      "todoSubtitle": "Retrouvez ici vos tâches et demandes en cours",
+      "noTaskLabel": "Aucune tâche à faire",
+      "noPendingTask": "Vous n'avez aucune tâche en attente",
+      "enjoyTime": "Profitez de votre temps",
+      "justNow": "à l'instant",
+      "minAgo": "il y a {count} min",
+      "hoursAgo": "{count, plural, one {il y a # heure} other {il y a # heures}}",
+      "daysAgo": "{count, plural, one {il y a # jour} other {il y a # jours}}"
+    }
+  }
+}

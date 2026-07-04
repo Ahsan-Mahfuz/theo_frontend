@@ -1,0 +1,151 @@
+{
+  "Landing": {
+    "header": {
+      "signUp": "Sign up",
+      "logIn": "Log in"
+    },
+    "footer": {
+      "description": "Professional cleaning management for hotels and apartments. Schedule, track, and manage your cleaning services effortlessly.",
+      "product": "PRODUCT",
+      "features": "Features",
+      "process": "Process",
+      "solution": "Solution",
+      "mobileApp": "Mobile App",
+      "legal": "LEGAL",
+      "about": "About Us",
+      "privacy": "Privacy & Policy",
+      "terms": "Terms & Conditions",
+      "legalNotice": "Legal Notice",
+      "contact": "CONTACT",
+      "copyright": "© {year} Gestlio. All rights reserved.",
+      "getItOn": "Get it on - "
+    },
+    "hero": {
+      "titlePart1": "Find Cleaners and",
+      "automate": "Automate",
+      "your": "your",
+      "airbnb": "Airbnb",
+      "cleaning": "Cleaning",
+      "subtitle": "Sync your bookings via iCal, find reliable cleaners and automate scheduling, payments and invoices in a few clicks",
+      "cta": "Create an account"
+    },
+    "forEveryone": {
+      "eyebrow": "FOR EVERYONE",
+      "heading": "A simple solution for hosts and cleaners",
+      "host": {
+        "eyebrow": "For Airbnb Hosts",
+        "title": "Manage your rentals effortlessly",
+        "description": "Everything you need to run your short-term rental without the hassle.",
+        "item1": "Find reliable cleaners near your properties",
+        "item2": "Automate cleaning schedules via iCal",
+        "item3": "Automatically assign cleaning tasks",
+        "item4": "Track each cleaning in real time",
+        "item5": "Centralize payments and invoices",
+        "item6": "Avoid oversights between bookings",
+        "footer": "Save time and reduce the mental burden of management"
+      },
+      "cleaner": {
+        "eyebrow": "For Cleaners",
+        "title": "For Cleaners",
+        "description": "Connect your booking platforms and automatically import reservations",
+        "item1": "Automatically receive cleaning jobs",
+        "item2": "Manage your schedule easily from the app",
+        "item3": "Get notified in real time",
+        "item4": "Track your payments easily",
+        "item5": "Grow your business without prospecting",
+        "footer": "Work more simply and find more assignments"
+      }
+    },
+    "process": {
+      "eyebrow": "THE PROCESS",
+      "heading": "How does it work?",
+      "step": "Step {number}",
+      "step1": {
+        "title": "Create your listing",
+        "description": "Create your listing on the platform and add the necessary information about your property."
+      },
+      "step2": {
+        "title": "Add a cleaner",
+        "description": "Add a cleaner to your listing according to your preferences and requirements."
+      },
+      "step3": {
+        "title": "Connect your iCal",
+        "description": "Connect your Airbnb calendar (iCal) to automatically sync your bookings in real time."
+      },
+      "step4": {
+        "title": "Auto-detect check-outs",
+        "description": "The app detects check-outs and automatically recommends cleanings to be performed."
+      },
+      "step5": {
+        "title": "Confirm the cleaning",
+        "description": "You confirm the cleaning and validate the service with the cleaner directly in the app."
+      },
+      "step6": {
+        "title": "Photo proof sent",
+        "description": "The cleaning is completed and a photo proof is sent to you for verification."
+      },
+      "step7": {
+        "title": "Automatic payment",
+        "description": "Once the cleaning is validated, payment is automatically sent to the cleaner."
+      }
+    },
+    "features": {
+      "eyebrow": "FEATURES",
+      "headingLine1": "Everything is automated, from scheduling",
+      "headingLine2": "to payment",
+      "icalSync": {
+        "title": "Automatic iCal Sync",
+        "description": "Connect once and let the app handle all your booking imports automatically."
+      },
+      "marketplace": {
+        "title": "Cleaner Marketplace",
+        "description": "Browse and hire verified, experienced cleaners near your properties."
+      },
+      "smartAssignment": {
+        "title": "Smart Assignment",
+        "description": "Cleanings are automatically assigned based on availability and proximity."
+      },
+      "payments": {
+        "title": "Payment Management",
+        "description": "Secure, automatic payments processed as soon as cleanings are validated."
+      },
+      "invoices": {
+        "title": "Automatic Invoices",
+        "description": "Professional invoices generated and sent automatically for every job."
+      },
+      "tracking": {
+        "title": "Real-time Tracking",
+        "description": "Monitor every cleaning in real time with live status updates and photo proofs."
+      }
+    },
+    "solution": {
+      "eyebrow": "OUR ADVANTAGES",
+      "heading": "Why use our solution?",
+      "fewerMessages": {
+        "title": "Fewer messages to manage",
+        "description": "Stop back-and-forth messaging.\nAutomate confirmations and updates."
+      },
+      "fewerErrors": {
+        "title": "Fewer scheduling errors",
+        "description": "Smart calendar sync prevents double\nbookings and missed cleanings."
+      },
+      "lessStress": {
+        "title": "Less operational stress",
+        "description": "Let the app handle the logistics while\nyou focus on your guests."
+      },
+      "centralized": {
+        "title": "Centralized organization",
+        "description": "All your properties, cleaners, tasks, and\npayments in one place."
+      }
+    },
+    "download": {
+      "title": "Download the app",
+      "description": "Manage your Airbnb cleanings directly from your phone. Available on iOS and Android.",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "bottomTitle": "Start automating your household chores today",
+      "bottomSubtitle": "Create a free account",
+      "bottomCta": "Create an account"
+    }
+  }
+}

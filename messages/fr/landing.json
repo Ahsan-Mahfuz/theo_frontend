@@ -1,0 +1,151 @@
+{
+  "Landing": {
+    "header": {
+      "signUp": "S'inscrire",
+      "logIn": "Se connecter"
+    },
+    "footer": {
+      "description": "Gestion professionnelle du ménage pour hôtels et appartements. Planifiez, suivez et gérez vos services de ménage sans effort.",
+      "product": "PRODUIT",
+      "features": "Fonctionnalités",
+      "process": "Processus",
+      "solution": "Solution",
+      "mobileApp": "Application mobile",
+      "legal": "MENTIONS LÉGALES",
+      "about": "À propos",
+      "privacy": "Politique de confidentialité",
+      "terms": "Conditions générales",
+      "legalNotice": "Mentions légales",
+      "contact": "CONTACT",
+      "copyright": "© {year} Gestlio. Tous droits réservés.",
+      "getItOn": "Disponible sur - "
+    },
+    "hero": {
+      "titlePart1": "Trouvez des agents et",
+      "automate": "Automatisez",
+      "your": "le",
+      "airbnb": "ménage",
+      "cleaning": "Airbnb",
+      "subtitle": "Synchronisez vos réservations via iCal, trouvez des agents de ménage fiables et automatisez la planification, les paiements et les factures en quelques clics",
+      "cta": "Créer un compte"
+    },
+    "forEveryone": {
+      "eyebrow": "POUR TOUS",
+      "heading": "Une solution simple pour les hôtes et les agents de ménage",
+      "host": {
+        "eyebrow": "Pour les hôtes Airbnb",
+        "title": "Gérez vos locations sans effort",
+        "description": "Tout ce dont vous avez besoin pour gérer votre location courte durée sans tracas.",
+        "item1": "Trouvez des agents de ménage fiables près de vos logements",
+        "item2": "Automatisez les plannings de ménage via iCal",
+        "item3": "Assignez automatiquement les tâches de ménage",
+        "item4": "Suivez chaque ménage en temps réel",
+        "item5": "Centralisez les paiements et les factures",
+        "item6": "Évitez les oublis entre les réservations",
+        "footer": "Gagnez du temps et réduisez la charge mentale de la gestion"
+      },
+      "cleaner": {
+        "eyebrow": "Pour les agents de ménage",
+        "title": "Pour les agents de ménage",
+        "description": "Connectez vos plateformes de réservation et importez automatiquement les réservations",
+        "item1": "Recevez automatiquement des missions de ménage",
+        "item2": "Gérez facilement votre planning depuis l'application",
+        "item3": "Soyez notifié en temps réel",
+        "item4": "Suivez vos paiements facilement",
+        "item5": "Développez votre activité sans prospection",
+        "footer": "Travaillez plus simplement et trouvez plus de missions"
+      }
+    },
+    "process": {
+      "eyebrow": "LE PROCESSUS",
+      "heading": "Comment ça marche ?",
+      "step": "Étape {number}",
+      "step1": {
+        "title": "Créez votre annonce",
+        "description": "Créez votre annonce sur la plateforme et ajoutez les informations nécessaires sur votre logement."
+      },
+      "step2": {
+        "title": "Ajoutez un agent de ménage",
+        "description": "Ajoutez un agent de ménage à votre annonce selon vos préférences et vos exigences."
+      },
+      "step3": {
+        "title": "Connectez votre iCal",
+        "description": "Connectez votre calendrier Airbnb (iCal) pour synchroniser automatiquement vos réservations en temps réel."
+      },
+      "step4": {
+        "title": "Détection automatique des départs",
+        "description": "L'application détecte les départs et recommande automatiquement les ménages à effectuer."
+      },
+      "step5": {
+        "title": "Confirmez le ménage",
+        "description": "Vous confirmez le ménage et validez la prestation avec l'agent directement dans l'application."
+      },
+      "step6": {
+        "title": "Preuve photo envoyée",
+        "description": "Le ménage est terminé et une preuve photo vous est envoyée pour vérification."
+      },
+      "step7": {
+        "title": "Paiement automatique",
+        "description": "Une fois le ménage validé, le paiement est automatiquement envoyé à l'agent de ménage."
+      }
+    },
+    "features": {
+      "eyebrow": "FONCTIONNALITÉS",
+      "headingLine1": "Tout est automatisé, de la planification",
+      "headingLine2": "au paiement",
+      "icalSync": {
+        "title": "Synchronisation iCal automatique",
+        "description": "Connectez-vous une fois et laissez l'application gérer automatiquement l'import de toutes vos réservations."
+      },
+      "marketplace": {
+        "title": "Place de marché d'agents de ménage",
+        "description": "Parcourez et engagez des agents de ménage vérifiés et expérimentés près de vos logements."
+      },
+      "smartAssignment": {
+        "title": "Attribution intelligente",
+        "description": "Les ménages sont automatiquement attribués selon la disponibilité et la proximité."
+      },
+      "payments": {
+        "title": "Gestion des paiements",
+        "description": "Des paiements sécurisés et automatiques traités dès que les ménages sont validés."
+      },
+      "invoices": {
+        "title": "Factures automatiques",
+        "description": "Des factures professionnelles générées et envoyées automatiquement pour chaque mission."
+      },
+      "tracking": {
+        "title": "Suivi en temps réel",
+        "description": "Suivez chaque ménage en temps réel avec des mises à jour de statut en direct et des preuves photo."
+      }
+    },
+    "solution": {
+      "eyebrow": "NOS AVANTAGES",
+      "heading": "Pourquoi utiliser notre solution ?",
+      "fewerMessages": {
+        "title": "Moins de messages à gérer",
+        "description": "Fini les échanges incessants.\nAutomatisez les confirmations et les mises à jour."
+      },
+      "fewerErrors": {
+        "title": "Moins d'erreurs de planification",
+        "description": "La synchronisation intelligente du calendrier évite les doubles\nréservations et les ménages oubliés."
+      },
+      "lessStress": {
+        "title": "Moins de stress opérationnel",
+        "description": "Laissez l'application gérer la logistique pendant que\nvous vous concentrez sur vos voyageurs."
+      },
+      "centralized": {
+        "title": "Organisation centralisée",
+        "description": "Tous vos logements, agents de ménage, tâches et\npaiements au même endroit."
+      }
+    },
+    "download": {
+      "title": "Téléchargez l'application",
+      "description": "Gérez vos ménages Airbnb directement depuis votre téléphone. Disponible sur iOS et Android.",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "bottomTitle": "Commencez à automatiser vos tâches ménagères dès aujourd'hui",
+      "bottomSubtitle": "Créez un compte gratuit",
+      "bottomCta": "Créer un compte"
+    }
+  }
+}

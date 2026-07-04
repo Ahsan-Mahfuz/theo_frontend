@@ -1,0 +1,30 @@
+{
+  "Common": {
+    "continue": "Continue",
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "search": "Search",
+    "add": "Add",
+    "remove": "Remove",
+    "send": "Send",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "retry": "Retry",
+    "backToHome": "Back to home",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "somethingWentWrong": "Something went wrong. Please try again."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "AddHousekeeper": {
+    "findHousekeeper": "Rechercher une femme de ménage",
+    "housekeepersNearby": "Femmes de ménage à proximité",
+    "noHousekeepersFound": "Aucune femme de ménage trouvée.",
+    "cleaningsCompleted": "{count} ménages effectués",
+    "selectAccommodation": "Sélectionner un logement",
+    "selectAccommodationDesc": "Choisissez le logement pour lequel vous souhaitez ajouter cette femme de ménage à votre équipe.",
+    "noAccommodationsFound": "Aucun logement trouvé.",
+    "housekeeperWillBeNotified": "La femme de ménage sera notifiée",
+    "housekeeperWillBeNotifiedDesc": "Elle pourra alors accepter votre invitation pour commencer à travailler sur le logement sélectionné.",
+    "adding": "Ajout en cours...",
+    "housekeeper": "Femme de ménage",
+    "overview": "Aperçu",
+    "interventionZone": "Zone d'intervention",
+    "appExperience": "Expérience sur l'application",
+    "cleaningsLower": "ménages",
+    "completed": "effectués",
+    "memberSince": "Membre depuis",
+    "about": "À propos",
+    "servicesOffered": "Services proposés",
+    "language": "Langue",
+    "chooseCleanerRole": "Choisir le rôle de l'agent",
+    "rolePrimary": "Principal",
+    "roleSubstitute": "Remplaçant",
+    "addHousekeeper": "Ajouter la femme de ménage",
+    "housekeeperAssigned": "Femme de ménage assignée avec succès !",
+    "requestSent": "La demande a été envoyée avec succès.",
+    "requestSentDesc": "Lorsque la candidature est acceptée, l'agent de ménage est automatiquement associé au logement sélectionné."
+  }
+}

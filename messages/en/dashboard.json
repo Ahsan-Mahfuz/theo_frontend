@@ -1,0 +1,41 @@
+{
+  "Dashboard": {
+    "nav": {
+      "home": "Home",
+      "planning": "Planning",
+      "housing": "Housing",
+      "message": "Message",
+      "settings": "Settings"
+    },
+    "footer": {
+      "rights": "© {year} Gestlio. All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "legalNotice": "Legal Notice"
+    },
+    "home": {
+      "title": "Home",
+      "scheduleCleaning": "Schedule A Cleaning",
+      "addHousekeeper": "Add Housekeeper",
+      "recommendedTitle": "Recommended Schedule",
+      "recommendedSubtitle": "Check the details and validate to launch the mission.",
+      "accommodationFallback": "Accommodation",
+      "nextCleaning": "Next Cleaning To Schedule",
+      "dateLabel": "Date:",
+      "timeSlotLabel": "Time slot:",
+      "assignedCleaner": "Assigned Cleaner",
+      "noRecommendedLabel": "No Recommended cleaning",
+      "upToDate": "You are up to date! All your upcomming",
+      "cleaningsScheduled": "Cleanings are scheduled",
+      "todoTitle": "To Do",
+      "todoSubtitle": "Find your current tasks and requests here",
+      "noTaskLabel": "No task to do",
+      "noPendingTask": "You have no pending task",
+      "enjoyTime": "Enjoy your time",
+      "justNow": "just now",
+      "minAgo": "{count} min ago",
+      "hoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}",
+      "daysAgo": "{count, plural, one {# day ago} other {# days ago}}"
+    }
+  }
+}

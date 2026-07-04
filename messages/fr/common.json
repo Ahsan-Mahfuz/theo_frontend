@@ -1,0 +1,30 @@
+{
+  "Common": {
+    "continue": "Continuer",
+    "save": "Enregistrer",
+    "saveChanges": "Enregistrer les modifications",
+    "saving": "Enregistrement…",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "next": "Suivant",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "loading": "Chargement…",
+    "search": "Rechercher",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "send": "Envoyer",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "retry": "Réessayer",
+    "backToHome": "Retour à l'accueil",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "signOut": "Se déconnecter",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "somethingWentWrong": "Une erreur s'est produite. Veuillez réessayer."
+  }
+}

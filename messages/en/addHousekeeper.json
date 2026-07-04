@@ -1,0 +1,31 @@
+{
+  "AddHousekeeper": {
+    "findHousekeeper": "Find a housekeeper",
+    "housekeepersNearby": "Housekeepers near by you",
+    "noHousekeepersFound": "No housekeepers found.",
+    "cleaningsCompleted": "{count} cleanings completed",
+    "selectAccommodation": "Select an accommodation",
+    "selectAccommodationDesc": "Choose the accommodation for which you wish to add this housekeeper to your team.",
+    "noAccommodationsFound": "No accommodations found.",
+    "housekeeperWillBeNotified": "The housekeeper will be notified",
+    "housekeeperWillBeNotifiedDesc": "She will then be able to accept your invitation to begin working on the selected accommodation.",
+    "adding": "Adding...",
+    "housekeeper": "Housekeeper",
+    "overview": "Overview",
+    "interventionZone": "Intervention zone",
+    "appExperience": "App experience",
+    "cleaningsLower": "cleanings",
+    "completed": "completed",
+    "memberSince": "Member since",
+    "about": "About",
+    "servicesOffered": "Services Offered",
+    "language": "Language",
+    "chooseCleanerRole": "Choose cleaner role",
+    "rolePrimary": "Primary",
+    "roleSubstitute": "Substitute",
+    "addHousekeeper": "Add Housekeeper",
+    "housekeeperAssigned": "Housekeeper successfully assigned!",
+    "requestSent": "Request has been successfully sent.",
+    "requestSentDesc": "When the application is accepted, the cleaning agent is automatically associated with the selected accommodation."
+  }
+}

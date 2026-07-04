@@ -1,0 +1,143 @@
+{
+  "Signup": {
+    "step1": {
+      "heading": "Create Your Account",
+      "subtitle": "Before you sign up, please understand who can register here.",
+      "hostAccount": "Host Account",
+      "websiteBadge": "Website",
+      "hostSubtitle": "Property owners & managers",
+      "feature1": "Post cleaning jobs and requests",
+      "feature2": "Manage your properties",
+      "feature3": "Review and hire cleaners",
+      "feature4": "Track cleaning schedules",
+      "continueAsHost": "Continue as Host",
+      "cleanerAccount": "Cleaner Account",
+      "appOnlyBadge": "App Only",
+      "cleanerSubtitle": "Professional cleaners",
+      "cleanerNoticeBold": "Cleaners cannot sign up on this website.",
+      "cleanerNoticeBefore": "To create a cleaner profile, please download the",
+      "cleanerNoticeAfter": "on your mobile device.",
+      "availableMobileOnly": "Available on Mobile App Only"
+    },
+    "step2": {
+      "heading": "Create your account",
+      "subtitle": "Join our platform for simplified management of your properties.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Your Email",
+      "sendingCode": "Sending code…",
+      "haveAccount": "Have an account?",
+      "errorSendCode": "Could not send the verification code."
+    },
+    "step3": {
+      "heading": "Verification E-mail",
+      "weSentCodeTo": "We have sent a code to",
+      "yourEmailFallback": "your email",
+      "emailLabel": "Email",
+      "modify": "Modify?",
+      "typeCodeLabel": "Type here code",
+      "errorFullCode": "Please enter the full code.",
+      "errorInvalidCode": "Invalid or expired code.",
+      "errorResend": "Could not resend the code.",
+      "newCodeSent": "A new code has been sent.",
+      "verifying": "Verifying…",
+      "resending": "Resending…",
+      "resendCode": "Resend Code"
+    },
+    "step4": {
+      "heading": "Complete your information",
+      "subtitle": "Tell us a bit about yourself to personalize your Gestlio experience.",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "e.g. John",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "e.g. Doe",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Your Password",
+      "passwordSecurity": "Password Security",
+      "rule1": "At least 8 characters",
+      "rule2": "One uppercase and one number",
+      "rule3": "One special character (@, #, !)",
+      "errorComplete": "Could not complete your account.",
+      "creatingAccount": "Creating your account…"
+    },
+    "step5": {
+      "welcome": "Welcome to Gestlio!",
+      "subtitle": "Your space is now ready. You can start managing your properties with peace of mind.",
+      "whatsNext": "What's next?",
+      "next1": "Complete your profile.",
+      "next2": "Add your information.",
+      "next3": "Start your first action.",
+      "addFirstAccommodation": "Add your first accommodation",
+      "skipForNow": "Skip for now"
+    },
+    "step6": {
+      "welcome": "Welcome to Gestlio!",
+      "subtitle": "Create your first property to organize your cleaning more easily and save time.",
+      "card1Title": "Find a trusted housekeeper",
+      "card1Desc": "Select, communicate, and work with total peace of mind.",
+      "card2Title": "Send your requests in just a few clicks",
+      "card2Desc": "Schedule your cleanings quickly and track their status.",
+      "card3Title": "Everything is centralized",
+      "card3Desc": "Manage your properties, your communications, and your history all in one place."
+    },
+    "step7": {
+      "heading": "Let's start with your accommodation",
+      "subtitle": "Give it a name and add a photo so you can find it easily.",
+      "nameLabel": "Accommodation Name",
+      "namePlaceholder": "Accommodation name here",
+      "uploadHere": "Upload here"
+    },
+    "step8": {
+      "heading": "Where is your property located?",
+      "subtitle": "Enter the full address so that the housekeepers can find you.",
+      "addAddressLabel": "Add Address",
+      "addAddressPlaceholder": "Add address here",
+      "address2Label": "Address line 2 (optional)",
+      "address2Placeholder": "Floor, building, door code..."
+    },
+    "step9": {
+      "heading": "Tell us about your property",
+      "subtitle": "This information helps us estimate the time and cost of the cleaning.",
+      "propertyTypeLabel": "Property type",
+      "bedroomsLabel": "Number of bedrooms",
+      "bathroomsLabel": "Number of bathrooms",
+      "surfaceAreaLabel": "Surface area (m²)",
+      "surfaceAreaPlaceholder": "Ex: 75"
+    },
+    "step12": {
+      "heading": "Summary",
+      "subtitle": "Verify your property information before continuing.",
+      "propertyName": "Property name",
+      "address": "Address",
+      "type": "Type",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "timeSlot": "Time slot",
+      "averageDuration": "Average duration",
+      "proposedRate": "Proposed rate",
+      "bedroomsValue": "{count} bedrooms",
+      "bathroomsValue": "{count} bathroom",
+      "timeSlotValue": "Between {start} and {end}",
+      "rateValue": "{rate} € / cleaning"
+    },
+    "step13": {
+      "congratulations": "Congratulations!",
+      "subtitle": "Your property is ready.",
+      "card1Title": "Send a cleaning request",
+      "card1Desc": "Choose the date and send a request to your housekeeper.",
+      "card2Title": "Track your requests",
+      "card2Desc": "Check the status of your requests in real time.",
+      "card3Title": "Communicate easily",
+      "card3Desc": "Chat with your housekeeper directly from the chat."
+    },
+    "step14": {
+      "heading": "And next?",
+      "subtitle": "Send your first cleaning request in just a few clicks.",
+      "card1Title": "Send a cleaning request",
+      "card1Desc": "Choose the date, time, and cleaning details.",
+      "card2Title": "Discover my dashboard",
+      "card2Desc": "Manage your properties, your cleanings, and your invoices.",
+      "card3Title": "Need help?",
+      "card3Desc": "Check our help center or contact our support."
+    }
+  }
+}

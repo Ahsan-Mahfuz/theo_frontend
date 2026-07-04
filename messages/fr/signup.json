@@ -1,0 +1,143 @@
+{
+  "Signup": {
+    "step1": {
+      "heading": "Créez votre compte",
+      "subtitle": "Avant de vous inscrire, veuillez comprendre qui peut s'inscrire ici.",
+      "hostAccount": "Compte hôte",
+      "websiteBadge": "Site web",
+      "hostSubtitle": "Propriétaires et gestionnaires",
+      "feature1": "Publiez des offres et des demandes de ménage",
+      "feature2": "Gérez vos logements",
+      "feature3": "Évaluez et embauchez des agents d'entretien",
+      "feature4": "Suivez les plannings de ménage",
+      "continueAsHost": "Continuer en tant qu'hôte",
+      "cleanerAccount": "Compte agent d'entretien",
+      "appOnlyBadge": "Application uniquement",
+      "cleanerSubtitle": "Agents d'entretien professionnels",
+      "cleanerNoticeBold": "Les agents d'entretien ne peuvent pas s'inscrire sur ce site web.",
+      "cleanerNoticeBefore": "Pour créer un profil d'agent d'entretien, veuillez télécharger l'application",
+      "cleanerNoticeAfter": "sur votre appareil mobile.",
+      "availableMobileOnly": "Disponible uniquement sur l'application mobile"
+    },
+    "step2": {
+      "heading": "Créez votre compte",
+      "subtitle": "Rejoignez notre plateforme pour une gestion simplifiée de vos logements.",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Votre e-mail",
+      "sendingCode": "Envoi du code…",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "errorSendCode": "Impossible d'envoyer le code de vérification."
+    },
+    "step3": {
+      "heading": "Vérification de l'e-mail",
+      "weSentCodeTo": "Nous avons envoyé un code à",
+      "yourEmailFallback": "votre e-mail",
+      "emailLabel": "E-mail",
+      "modify": "Modifier ?",
+      "typeCodeLabel": "Saisissez le code ici",
+      "errorFullCode": "Veuillez saisir le code complet.",
+      "errorInvalidCode": "Code invalide ou expiré.",
+      "errorResend": "Impossible de renvoyer le code.",
+      "newCodeSent": "Un nouveau code a été envoyé.",
+      "verifying": "Vérification…",
+      "resending": "Renvoi en cours…",
+      "resendCode": "Renvoyer le code"
+    },
+    "step4": {
+      "heading": "Complétez vos informations",
+      "subtitle": "Parlez-nous un peu de vous pour personnaliser votre expérience Gestlio.",
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "ex. Jean",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "ex. Dupont",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Votre mot de passe",
+      "passwordSecurity": "Sécurité du mot de passe",
+      "rule1": "Au moins 8 caractères",
+      "rule2": "Une majuscule et un chiffre",
+      "rule3": "Un caractère spécial (@, #, !)",
+      "errorComplete": "Impossible de finaliser votre compte.",
+      "creatingAccount": "Création de votre compte…"
+    },
+    "step5": {
+      "welcome": "Bienvenue sur Gestlio !",
+      "subtitle": "Votre espace est maintenant prêt. Vous pouvez commencer à gérer vos logements en toute sérénité.",
+      "whatsNext": "Et maintenant ?",
+      "next1": "Complétez votre profil.",
+      "next2": "Ajoutez vos informations.",
+      "next3": "Lancez votre première action.",
+      "addFirstAccommodation": "Ajouter votre premier logement",
+      "skipForNow": "Ignorer pour le moment"
+    },
+    "step6": {
+      "welcome": "Bienvenue sur Gestlio !",
+      "subtitle": "Créez votre premier logement pour organiser votre ménage plus facilement et gagner du temps.",
+      "card1Title": "Trouvez un agent d'entretien de confiance",
+      "card1Desc": "Sélectionnez, échangez et travaillez en toute sérénité.",
+      "card2Title": "Envoyez vos demandes en quelques clics",
+      "card2Desc": "Planifiez vos ménages rapidement et suivez leur statut.",
+      "card3Title": "Tout est centralisé",
+      "card3Desc": "Gérez vos logements, vos échanges et votre historique au même endroit."
+    },
+    "step7": {
+      "heading": "Commençons par votre logement",
+      "subtitle": "Donnez-lui un nom et ajoutez une photo pour le retrouver facilement.",
+      "nameLabel": "Nom du logement",
+      "namePlaceholder": "Nom du logement ici",
+      "uploadHere": "Importer ici"
+    },
+    "step8": {
+      "heading": "Où se situe votre logement ?",
+      "subtitle": "Saisissez l'adresse complète pour que les agents d'entretien puissent vous trouver.",
+      "addAddressLabel": "Ajouter une adresse",
+      "addAddressPlaceholder": "Ajoutez l'adresse ici",
+      "address2Label": "Complément d'adresse (facultatif)",
+      "address2Placeholder": "Étage, bâtiment, code d'accès..."
+    },
+    "step9": {
+      "heading": "Parlez-nous de votre logement",
+      "subtitle": "Ces informations nous aident à estimer la durée et le coût du ménage.",
+      "propertyTypeLabel": "Type de logement",
+      "bedroomsLabel": "Nombre de chambres",
+      "bathroomsLabel": "Nombre de salles de bain",
+      "surfaceAreaLabel": "Surface (m²)",
+      "surfaceAreaPlaceholder": "Ex : 75"
+    },
+    "step12": {
+      "heading": "Récapitulatif",
+      "subtitle": "Vérifiez les informations de votre logement avant de continuer.",
+      "propertyName": "Nom du logement",
+      "address": "Adresse",
+      "type": "Type",
+      "bedrooms": "Chambres",
+      "bathrooms": "Salles de bain",
+      "timeSlot": "Créneau horaire",
+      "averageDuration": "Durée moyenne",
+      "proposedRate": "Tarif proposé",
+      "bedroomsValue": "{count} chambres",
+      "bathroomsValue": "{count} salle de bain",
+      "timeSlotValue": "Entre {start} et {end}",
+      "rateValue": "{rate} € / ménage"
+    },
+    "step13": {
+      "congratulations": "Félicitations !",
+      "subtitle": "Votre logement est prêt.",
+      "card1Title": "Envoyez une demande de ménage",
+      "card1Desc": "Choisissez la date et envoyez une demande à votre agent d'entretien.",
+      "card2Title": "Suivez vos demandes",
+      "card2Desc": "Consultez le statut de vos demandes en temps réel.",
+      "card3Title": "Communiquez facilement",
+      "card3Desc": "Discutez avec votre agent d'entretien directement depuis la messagerie."
+    },
+    "step14": {
+      "heading": "Et ensuite ?",
+      "subtitle": "Envoyez votre première demande de ménage en quelques clics.",
+      "card1Title": "Envoyez une demande de ménage",
+      "card1Desc": "Choisissez la date, l'heure et les détails du ménage.",
+      "card2Title": "Découvrez mon tableau de bord",
+      "card2Desc": "Gérez vos logements, vos ménages et vos factures.",
+      "card3Title": "Besoin d'aide ?",
+      "card3Desc": "Consultez notre centre d'aide ou contactez notre support."
+    }
+  }
+}

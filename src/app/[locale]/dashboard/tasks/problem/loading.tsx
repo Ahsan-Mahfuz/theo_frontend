@@ -1,0 +1,49 @@
+import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
+
+export default function Loading() {
+  return (
+    <div className="w-full flex items-center justify-center min-h-[70vh] py-10">
+      <div className="w-full max-w-[600px] bg-white rounded-[24px] border border-gray-100 p-5 flex flex-col items-center">
+        <SkeletonCircle size={56} className="mb-2" />
+        <Skeleton className="h-4 w-64 rounded mb-2" />
+        <Skeleton className="h-3 w-48 rounded mb-6" />
+
+        <div className="w-full flex flex-col gap-6">
+          <Skeleton className="h-3.5 w-32 rounded" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-[80px] h-[80px] rounded-xl shrink-0" />
+            <div className="flex flex-col gap-2 flex-1">
+              <Skeleton className="h-3.5 w-40 rounded" />
+              <Skeleton className="h-3 w-32 rounded" />
+              <Skeleton className="h-3 w-36 rounded" />
+              <Skeleton className="h-3 w-28 rounded" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <SkeletonCircle size={40} />
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-3.5 w-28 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
+            </div>
+            <Skeleton className="h-8 w-20 rounded-lg" />
+          </div>
+
+          {/* Note box */}
+          <Skeleton className="h-20 w-full rounded-xl" />
+
+          {/* Photos */}
+          <Skeleton className="h-3.5 w-48 rounded" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="w-full aspect-square rounded-2xl" />
+            <Skeleton className="w-full aspect-square rounded-2xl" />
+          </div>
+
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
