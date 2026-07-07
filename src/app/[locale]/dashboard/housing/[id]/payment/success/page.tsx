@@ -2,23 +2,26 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Calendar01Icon, 
-  Clock01Icon, 
-  UserCircleIcon,
-  CheckmarkCircle02Icon
+import { useSearchParams } from 'next/navigation';
+import {
+  Calendar01Icon,
+  Clock01Icon,
+  UserCircleIcon
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
-import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
+import { useGetScheduleByIdQuery } from '@/store/api/scheduleApi';
+import { formatEuro } from '@/lib/pricing';
 import { baseApi } from '@/store/api/baseApi';
 import { useAppDispatch } from '@/store/hooks';
 
 export default function PaymentSuccessPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+  React.use(params);
   const t = useTranslations('Housing.success');
   const c = useTranslations('Common');
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
+  const scheduleId = searchParams.get('scheduleId') || '';
 
   // Payment just confirmed (Stripe redirected here). The webhook has flipped the
   // schedule to paid_held server-side, so drop the cached Schedule/Calendar/Payment
@@ -27,14 +30,21 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
     dispatch(baseApi.util.invalidateTags(['Schedule', 'Calendar', 'Payment', 'HostDashboard']));
   }, [dispatch]);
 
-  const { data: accommodation } = useGetAccommodationByIdQuery(resolvedParams.id);
-  const cleaners = (accommodation?.assignedCleaners ?? []) as any[];
-  const primaryEntry = cleaners.find((c) => c.role === 'primary') || null;
+  // Real cleaning + payment details for this schedule.
+  const { data: schedule } = useGetScheduleByIdQuery(scheduleId, { skip: !scheduleId });
+  const s = schedule as any;
+
+  const cleaner = s?.cleaner && typeof s.cleaner === 'object' ? s.cleaner : null;
   const housekeeperName =
-    (primaryEntry?.cleaner &&
-      (primaryEntry.cleaner.name ||
-        `${primaryEntry.cleaner.firstName ?? ''} ${primaryEntry.cleaner.lastName ?? ''}`.trim())) ||
-    'Sophie';
+    (cleaner && (cleaner.name || `${cleaner.firstName ?? ''} ${cleaner.lastName ?? ''}`.trim())) || '—';
+
+  const dateLabel = s?.date
+    ? new Date(s.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : '—';
+  const timeLabel = s?.checkOutTime && s?.checkInTime ? `${s.checkOutTime} → ${s.checkInTime}` : '—';
+
+  // latestPayment.amount is the total charged, in the smallest currency unit (cents).
+  const paidTotal = s?.latestPayment?.amount != null ? s.latestPayment.amount / 100 : null;
 
   return (
     <main className="w-full px-8 py-10 animate-in fade-in duration-500 max-w-[600px] mx-auto">
@@ -70,7 +80,7 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
               <HugeiconsIcon icon={Calendar01Icon} className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-[11px] text-gray-500">{t('date')}</span>
             </div>
-            <span className="text-[11px] font-medium text-gray-900">{t('dateValue')}</span>
+            <span className="text-[11px] font-medium text-gray-900">{dateLabel}</span>
           </div>
 
           <div className="flex items-center justify-between gap-4">
@@ -78,7 +88,7 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
               <HugeiconsIcon icon={Clock01Icon} className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-[11px] text-gray-500">{t('checkOutIn')}</span>
             </div>
-            <span className="text-[11px] font-medium text-gray-900">10:00am → 12:30pm</span>
+            <span className="text-[11px] font-medium text-gray-900">{timeLabel}</span>
           </div>
 
           <div className="flex items-center justify-between gap-4">
@@ -94,17 +104,13 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
         <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('priceDetails')}</h2>
 
         <div className="flex flex-col gap-3 mb-10">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-gray-500">{t('cleaningService')}</span>
-            <span className="font-medium text-gray-900">55,00 €</span>
-          </div>
           <div className="flex items-center justify-between text-[11px] pb-4 border-b border-gray-100">
-            <span className="text-gray-500">{t('serviceFee')}</span>
-            <span className="font-medium text-gray-900">3,00 €</span>
+            <span className="text-gray-500">{t('cleaningService')}</span>
+            <span className="font-medium text-gray-900">{paidTotal != null ? formatEuro(paidTotal) : '—'}</span>
           </div>
           <div className="flex items-center justify-between text-[12px] font-bold pt-1">
             <span className="text-gray-900">{t('total')}</span>
-            <span className="text-gray-900">58,00 €</span>
+            <span className="text-gray-900">{paidTotal != null ? formatEuro(paidTotal) : '—'}</span>
           </div>
         </div>
 

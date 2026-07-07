@@ -120,7 +120,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
   // Absolute URL Stripe redirects to after a successful confirmation.
   const returnUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/${locale}/dashboard/housing/${id}/payment/success`
+      ? `${window.location.origin}/${locale}/dashboard/housing/${id}/payment/success?scheduleId=${scheduleId}`
       : '';
 
   return (

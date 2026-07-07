@@ -27,6 +27,8 @@ export default function HousekeeperProfilePage() {
   const housingId = searchParams.get('housingId') || '';
 
   const [role, setRole] = useState('Primary');
+  const [price, setPrice] = useState('');
+  const [message, setMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -38,11 +40,26 @@ export default function HousekeeperProfilePage() {
   const handleAddHousekeeper = async () => {
     if (!id) return;
     setErrorMsg('');
+
+    // Price is optional, but when the host enters one it must be a positive
+    // number (0 or negative is never valid).
+    const trimmedPrice = price.trim();
+    const priceValue = trimmedPrice === '' ? undefined : Number(trimmedPrice);
+    if (priceValue !== undefined && (!Number.isFinite(priceValue) || priceValue <= 0)) {
+      setErrorMsg(t('priceInvalid'));
+      return;
+    }
+    const trimmedMessage = message.trim();
+
     // No housing context yet (entered from the dashboard, not a specific
     // property): send the host to the select-accommodation step, where we
-    // surface any existing requests/assignments for this cleaner.
+    // surface any existing requests/assignments for this cleaner. Carry the
+    // price/message along so they aren't lost.
     if (!housingId) {
-      router.push(`/dashboard/add-housekeeper/select?id=${id}`);
+      const params = new URLSearchParams({ id });
+      if (priceValue !== undefined) params.set('price', String(priceValue));
+      if (trimmedMessage) params.set('message', trimmedMessage);
+      router.push(`/dashboard/add-housekeeper/select?${params.toString()}`);
       return;
     }
     try {
@@ -50,6 +67,8 @@ export default function HousekeeperProfilePage() {
         accommodationId: housingId,
         cleanerId: id,
         role: role.toLowerCase() as 'primary' | 'substitute',
+        pricePerCleaning: priceValue,
+        message: trimmedMessage || undefined,
       }).unwrap();
       setShowToast(true);
       setTimeout(() => {
@@ -207,6 +226,31 @@ export default function HousekeeperProfilePage() {
             <HugeiconsIcon icon={ArrowDown01Icon} className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
         </div>
+
+        <div className="flex flex-col gap-1.5 w-full md:w-[320px]">
+          <label className="text-[12px] font-medium text-gray-800">{t('pricePerCleaningLabel')}</label>
+          <input
+            type="number"
+            min="1"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder={t('pricePlaceholder')}
+            className="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 outline-none text-[13px] text-gray-800 focus:border-gray-400 shadow-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5 w-full md:w-[320px]">
+          <label className="text-[12px] font-medium text-gray-800">{t('messageLabel')}</label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t('messagePlaceholder')}
+            rows={3}
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none text-[13px] text-gray-800 focus:border-gray-400 shadow-sm resize-none"
+          />
+        </div>
+
         {errorMsg && (
           <p className="text-[12px] text-red-500 w-full md:w-[320px] text-right">{errorMsg}</p>
         )}

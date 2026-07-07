@@ -18,6 +18,9 @@ export default function SelectAccommodationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
+  // Price/message carried over from the cleaner profile step.
+  const priceParam = searchParams.get('price');
+  const messageParam = searchParams.get('message') || '';
 
   const [selectedAccommodation, setSelectedAccommodation] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -40,10 +43,16 @@ export default function SelectAccommodationPage() {
     if (!selectedAccommodation || !id) return;
     setErrorMsg('');
     try {
+      const priceValue = priceParam != null ? Number(priceParam) : undefined;
       await assignCleaner({
         accommodationId: selectedAccommodation,
         cleanerId: id,
         role: 'primary',
+        pricePerCleaning:
+          priceValue !== undefined && Number.isFinite(priceValue) && priceValue > 0
+            ? priceValue
+            : undefined,
+        message: messageParam || undefined,
       }).unwrap();
       router.push('/dashboard/add-housekeeper/success');
     } catch (err) {
