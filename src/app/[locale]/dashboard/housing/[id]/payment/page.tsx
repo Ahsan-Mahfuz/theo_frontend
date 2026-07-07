@@ -16,6 +16,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { usePayForScheduleMutation, type PayIntent } from '@/store/api/paymentApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatEuro } from '@/lib/pricing';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage } from '@/components/ui/app-image';
 
@@ -172,11 +173,11 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         <div className="flex flex-col gap-3 mb-10">
           <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
             <span className="text-gray-500">{t('cleaningService')}</span>
-            <span className="font-medium text-gray-900">{total != null ? `${total},00 €` : '—'}</span>
+            <span className="font-medium text-gray-900">{total != null ? formatEuro(total) : '—'}</span>
           </div>
           <div className="flex items-center justify-between text-[13px] font-bold pt-1">
             <span className="text-gray-900">{t('total')}</span>
-            <span className="text-gray-900">{total != null ? `${total},00 €` : '—'}</span>
+            <span className="text-gray-900">{total != null ? formatEuro(total) : '—'}</span>
           </div>
         </div>
 

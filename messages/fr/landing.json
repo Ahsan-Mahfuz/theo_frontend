@@ -20,6 +20,26 @@
       "copyright": "© {year} Gestlio. Tous droits réservés.",
       "getItOn": "Disponible sur - "
     },
+    "legalPages": {
+      "eyebrow": "Mentions légales",
+      "empty": "Ce contenu sera bientôt disponible. Merci de revenir prochainement.",
+      "about": {
+        "title": "À propos",
+        "subtitle": "Découvrez qui nous sommes et la mission derrière la plateforme de gestion du nettoyage Gestlio."
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "subtitle": "Comment nous collectons, utilisons et protégeons vos informations personnelles."
+      },
+      "terms": {
+        "title": "Conditions générales",
+        "subtitle": "Les conditions régissant votre utilisation des services Gestlio."
+      },
+      "legalNotice": {
+        "title": "Mentions légales",
+        "subtitle": "Informations légales concernant l'éditeur et l'hébergement de ce site web."
+      }
+    },
     "hero": {
       "titlePart1": "Trouvez des agents et",
       "automate": "Automatisez",

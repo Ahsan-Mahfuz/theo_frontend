@@ -33,6 +33,12 @@ export const computeSchedulePrice = (
   };
 };
 
-// French-style amount used across the schedule flow: "55,00 €".
-export const formatEuro = (amount: number): string =>
-  `${amount.toFixed(2).replace('.', ',')} €`;
+// French-style amount used across the schedule flow. Whole euros render without
+// centimes ("250 €"); only genuine fractional prices keep the decimals ("2,50 €").
+export const formatEuro = (amount: number): string => {
+  const rounded = Math.round(amount * 100) / 100;
+  const text = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(2).replace('.', ',');
+  return `${text} €`;
+};

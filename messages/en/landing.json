@@ -20,6 +20,26 @@
       "copyright": "© {year} Gestlio. All rights reserved.",
       "getItOn": "Get it on - "
     },
+    "legalPages": {
+      "eyebrow": "Legal",
+      "empty": "This content will be available shortly. Please check back soon.",
+      "about": {
+        "title": "About Us",
+        "subtitle": "Learn who we are and the mission behind Gestlio's cleaning management platform."
+      },
+      "privacy": {
+        "title": "Privacy & Policy",
+        "subtitle": "How we collect, use, and protect your personal information."
+      },
+      "terms": {
+        "title": "Terms & Conditions",
+        "subtitle": "The terms that govern your use of Gestlio's services."
+      },
+      "legalNotice": {
+        "title": "Legal Notice",
+        "subtitle": "Legal information about the publisher and hosting of this website."
+      }
+    },
     "hero": {
       "titlePart1": "Find Cleaners and",
       "automate": "Automate",

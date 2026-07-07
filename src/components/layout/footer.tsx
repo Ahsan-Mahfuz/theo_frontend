@@ -1,5 +1,6 @@
 import { AppImage } from '@/components/ui/app-image';
 import Link from 'next/link';
+import { Link as LocaleLink } from '@/i18n/navigation';
 import { TwitterIcon, InstagramIcon, Linkedin01Icon, Call02Icon, Mail01Icon, Location01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
@@ -35,10 +36,10 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-slate-900 mb-6 text-sm tracking-widest uppercase">{t('footer.legal')}</h4>
             <ul className="space-y-4">
-              <li><Link href="#" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.about')}</Link></li>
-              <li><Link href="#" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.privacy')}</Link></li>
-              <li><Link href="#" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.terms')}</Link></li>
-              <li><Link href="#" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.legalNotice')}</Link></li>
+              <li><LocaleLink href="/about-us" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.about')}</LocaleLink></li>
+              <li><LocaleLink href="/privacy-policy" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.privacy')}</LocaleLink></li>
+              <li><LocaleLink href="/terms" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.terms')}</LocaleLink></li>
+              <li><LocaleLink href="/legal-notice" className="text-[15px] text-slate-500 hover:text-slate-900 transition-colors">{t('footer.legalNotice')}</LocaleLink></li>
             </ul>
           </div>
 
