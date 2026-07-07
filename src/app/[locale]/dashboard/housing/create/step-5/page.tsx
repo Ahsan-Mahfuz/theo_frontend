@@ -143,13 +143,22 @@ export default function Step5Page() {
         >
           {c('edit')}
         </button>
-        <button
-          onClick={handleContinue}
-          disabled={isLoading}
-          className={`w-full h-12 text-white font-medium rounded-xl transition-colors shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-900'}`}
-        >
-          {isLoading ? t('creating') : t('confirmCreate')}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/dashboard/housing/create/step-4')}
+            disabled={isLoading}
+            className="h-12 px-6 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-colors shadow-sm disabled:opacity-50"
+          >
+            {c('back')}
+          </button>
+          <button
+            onClick={handleContinue}
+            disabled={isLoading}
+            className={`flex-1 h-12 text-white font-medium rounded-xl transition-colors shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-900'}`}
+          >
+            {isLoading ? t('creating') : t('confirmCreate')}
+          </button>
+        </div>
 
 
       </div>

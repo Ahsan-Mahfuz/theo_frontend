@@ -44,14 +44,27 @@ export const scheduleApi = baseApi.injectEndpoints({
     getScheduleById: builder.query<CleaningSchedule, string>({
       query: (id) => `/schedule/${id}`,
       transformResponse: (res: ApiEnvelope<CleaningSchedule>) => res.data,
-      providesTags: (_r, _e, id) => [{ type: 'Schedule', id }],
+      // Also provide the generic 'Schedule' tag so list-level invalidations
+      // (complete / invalidate / pay) refetch this detail view too.
+      providesTags: (_r, _e, id) => [{ type: 'Schedule', id }, 'Schedule'],
     }),
 
     // Host: mark a paid schedule as complete (releases the payout).
     completeSchedule: builder.mutation<CleaningSchedule, string>({
       query: (id) => ({ url: `/schedule/${id}/complete`, method: 'PATCH' }),
       transformResponse: (res: ApiEnvelope<CleaningSchedule>) => res.data,
-      invalidatesTags: ['Schedule', 'HostDashboard'],
+      invalidatesTags: ['Schedule', 'Calendar', 'Payment', 'HostDashboard'],
+    }),
+
+    // Host: reject the submitted proof — sends the job back to the cleaner.
+    invalidateProof: builder.mutation<CleaningSchedule, { id: string; reason?: string }>({
+      query: ({ id, reason }) => ({
+        url: `/schedule/${id}/invalidate`,
+        method: 'PATCH',
+        body: { reason },
+      }),
+      transformResponse: (res: ApiEnvelope<CleaningSchedule>) => res.data,
+      invalidatesTags: ['Schedule', 'Calendar', 'HostDashboard'],
     }),
 
     // Host: edit a schedule (only while still "scheduled").
@@ -83,6 +96,7 @@ export const {
   useGetHostSchedulesQuery,
   useGetScheduleByIdQuery,
   useCompleteScheduleMutation,
+  useInvalidateProofMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
 } = scheduleApi;

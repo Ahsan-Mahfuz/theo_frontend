@@ -106,6 +106,20 @@ const LIST_FILTERS: { key: ListFilter; labelKey: string }[] = [
   { key: 'paid', labelKey: 'filterPaid' },
 ];
 
+// Client-side gate for the list tabs. Mirrors the backend `view` buckets so the
+// filter is correct even if the API ignores/lags the `view` param.
+const matchesListFilter = (s: any, f: ListFilter): boolean => {
+  switch (f) {
+    case 'awaiting': return s.status === 'scheduled';
+    // "Accepted" = cleaner accepted but the host hasn't paid yet. Paid cleanings
+    // (in_progress/completed) live under the Paid tab, not here.
+    case 'accepted': return s.status === 'accepted' && !isPaid(s);
+    case 'pay_now': return needsPayment(s);
+    case 'paid': return isPaid(s);
+    default: return true;
+  }
+};
+
 const cleanerNameOf = (cl: any, fallback: string) =>
   cl?.name || `${cl?.firstName ?? ''} ${cl?.lastName ?? ''}`.trim() || fallback;
 
@@ -363,6 +377,12 @@ export default function PlanningPage() {
   const monthData = monthDataRaw as MonthData | undefined;
   const hasConnections = (connections?.length ?? 0) > 0;
   const schedules = scheduleList?.data ?? [];
+  // Apply the active tab as a definitive client-side gate (the API also filters,
+  // but this guarantees the tab is always correct).
+  const visibleSchedules = useMemo(
+    () => (schedules as any[]).filter((s) => matchesListFilter(s, listFilter)),
+    [schedules, listFilter],
+  );
 
   const monthLabel = useMemo(
     () => new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' }),
@@ -451,7 +471,10 @@ export default function PlanningPage() {
   const dayInput = (d: number) =>
     `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-  const showConnectForm = !!selectedAccId && !connLoading && (!hasConnections || showConnect);
+  // Connecting a calendar is always optional: every accommodation shows the
+  // Calendar/List by default, and the connect form only opens on demand (via the
+  // "manage calendars" button). We never force it just because nothing is connected.
+  const showConnectForm = !!selectedAccId && !connLoading && showConnect;
 
   return (
     <main className="w-full px-8 py-10 animate-in fade-in duration-500 mx-auto">
@@ -461,8 +484,8 @@ export default function PlanningPage() {
 
       <div className="flex flex-col xl:flex-row gap-8 items-start">
 
-        {/* Left — accommodation list */}
-        <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-4">
+        {/* Left — accommodation list (bounded, self-scrolling, sticky on wide screens) */}
+        <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-140px)] xl:overflow-y-auto xl:pr-1.5 scrollbar-slim">
           {accLoading &&
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-3xl p-3 flex items-center gap-4 bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
@@ -528,11 +551,9 @@ export default function PlanningPage() {
             <div className="w-full flex flex-col p-4 max-w-[800px] mx-auto animate-in fade-in duration-300">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-[16px] font-bold text-gray-900">{t('connectMyCalendars')}</h2>
-                {hasConnections && (
-                  <button onClick={() => setShowConnect(false)} className="text-[11px] font-medium text-gray-500 hover:text-gray-800">
-                    {t('backToCalendar')}
-                  </button>
-                )}
+                <button onClick={() => setShowConnect(false)} className="text-[11px] font-medium text-gray-500 hover:text-gray-800">
+                  {t('backToCalendar')}
+                </button>
               </div>
               <p className="text-[12px] text-gray-500 mb-6">{t('pasteIcalDescription')}</p>
 
@@ -736,7 +757,7 @@ export default function PlanningPage() {
                     })}
                   </div>
 
-                  <div className="flex flex-col gap-3 overflow-y-auto pr-1 pb-2">
+                  <div className="flex flex-col gap-3 overflow-y-auto pr-1 pb-2 scrollbar-slim">
                     {(schedLoading || schedFetching) &&
                       Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl">
@@ -751,13 +772,13 @@ export default function PlanningPage() {
                         </div>
                       ))}
 
-                    {!schedLoading && !schedFetching && schedules.length === 0 && (
+                    {!schedLoading && !schedFetching && visibleSchedules.length === 0 && (
                       <div className="py-16 text-center text-[13px] text-gray-400">
                         {listFilter === 'all' ? t('noSchedules') : t('noSchedulesForFilter')}
                       </div>
                     )}
 
-                    {!schedLoading && !schedFetching && schedules.map((s: any) => {
+                    {!schedLoading && !schedFetching && visibleSchedules.map((s: any) => {
                       const editable = s.status === 'scheduled';
                       const dateLabel = new Date(s.date).toLocaleDateString(locale, {
                         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
@@ -797,10 +818,20 @@ export default function PlanningPage() {
                             <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${SCHED_STATUS[s.status] ?? SCHED_STATUS.scheduled}`}>
                               {t(`status.${s.status}` as any)}
                             </span>
-                            {needsPayment(s) && (
+                            {/* The pay action lives in the "Pay now" (and All) tabs; the
+                                Accepted tab is a read-only view of accepted cleanings. */}
+                            {needsPayment(s) && listFilter !== 'accepted' && (
                               <button onClick={() => goPay(s)} className="h-8 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center gap-1">
                                 <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
                                 {t('payNow')}
+                              </button>
+                            )}
+                            {/* Cleaner submitted proof (or raised a dispute): host reviews
+                                and validates on the detail page. */}
+                            {(s.status === 'proof_submitted' || s.status === 'disputed') && (
+                              <button onClick={() => router.push(`/dashboard/tasks/${s._id}`)} className="h-8 px-3 rounded-lg bg-[#7C3AED] text-white text-[11px] font-bold hover:bg-[#6D28D9] flex items-center gap-1">
+                                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-3.5 h-3.5" />
+                                {t('reviewProof')}
                               </button>
                             )}
                             {editable && (
@@ -884,6 +915,12 @@ export default function PlanningPage() {
                 <button onClick={() => goPay(detail)} className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2">
                   <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
                   {t('payNow')}
+                </button>
+              )}
+              {(detail.status === 'proof_submitted' || detail.status === 'disputed') && (
+                <button onClick={() => router.push(`/dashboard/tasks/${detail._id}`)} className="flex-1 h-11 rounded-xl bg-[#7C3AED] text-white text-[13px] font-bold hover:bg-[#6D28D9] flex items-center justify-center gap-2">
+                  <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-4 h-4" />
+                  {t('reviewProof')}
                 </button>
               )}
               {detail.status === 'scheduled' && (

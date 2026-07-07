@@ -19,6 +19,23 @@ export const assignmentApi = baseApi.injectEndpoints({
       providesTags: (_r, _e, id) => [{ type: 'Housekeeper', id }],
     }),
 
+    // Host: this cleaner's request/assignment status across the host's own
+    // accommodations (drives the "already requested / already added" badges).
+    getCleanerAssignments: builder.query<
+      Array<{
+        _id: string;
+        accommodation: string;
+        role: 'primary' | 'substitute';
+        status: 'pending' | 'accepted' | 'refused';
+        createdAt: string;
+      }>,
+      string
+    >({
+      query: (cleanerId) => `/assignment/housekeepers/${cleanerId}/assignments`,
+      transformResponse: (res: ApiEnvelope<any[]>) => res.data,
+      providesTags: ['Assignment'],
+    }),
+
     // Host: assign a cleaner to an accommodation.
     assignCleaner: builder.mutation<
       CleanerAssignment,
@@ -69,6 +86,7 @@ export const assignmentApi = baseApi.injectEndpoints({
 export const {
   useFindHousekeepersQuery,
   useGetHousekeeperProfileQuery,
+  useGetCleanerAssignmentsQuery,
   useAssignCleanerMutation,
   useGetAccommodationCleanersQuery,
   useChangeAssignmentRoleMutation,

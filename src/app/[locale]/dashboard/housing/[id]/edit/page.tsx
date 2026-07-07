@@ -245,6 +245,8 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
                 <select value={accommodationType} onChange={(e) => setAccommodationType(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
                   <option value="Apartment">{t('typeApartment')}</option>
                   <option value="House">{t('typeHouse')}</option>
+                  <option value="Studio">{t('typeStudio')}</option>
+                  <option value="Other">{t('typeOther')}</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">

@@ -45,8 +45,18 @@
       "addressPlaceholder": "15 Rue de la Paix, 75002 Paris",
       "cityLabel": "Ville",
       "selectCity": "Sélectionnez une ville",
+      "cityPlaceholder": "Paris",
       "zipLabel": "Code postal",
-      "zipPlaceholder": "75002"
+      "zipPlaceholder": "75002",
+      "errors": {
+        "name": "Veuillez saisir le nom du logement.",
+        "type": "Veuillez sélectionner un type.",
+        "address": "Veuillez saisir l'adresse.",
+        "addressShort": "L'adresse doit comporter au moins 5 caractères.",
+        "city": "Veuillez sélectionner une ville.",
+        "zip": "Veuillez saisir le code postal."
+      },
+      "typeOther": "Autre"
     },
     "step2": {
       "heading": "Détails du logement",
@@ -64,7 +74,12 @@
       "cleaningRatePlaceholder": "55,00 €",
       "cleaningRateHint": "Montant que vous payez pour chaque ménage.",
       "notesLabel": "Notes (facultatif)",
-      "notesPlaceholder": "Ex : appartement lumineux et calme..."
+      "notesPlaceholder": "Ex : appartement lumineux et calme...",
+      "errors": {
+        "rooms": "Veuillez sélectionner le nombre de pièces.",
+        "surface": "Veuillez saisir la surface.",
+        "surfaceInvalid": "Saisissez une surface valide en m²."
+      }
     },
     "step3": {
       "heading": "Photo du logement",
@@ -188,7 +203,9 @@
       "frequencyLabel": "Fréquence habituelle",
       "selectFrequency": "Sélectionnez une fréquence",
       "everyWeek": "Chaque semaine",
-      "every2Weeks": "Toutes les 2 semaines"
+      "every2Weeks": "Toutes les 2 semaines",
+      "typeOther": "Autre",
+      "typeStudio": "Studio"
     },
     "schedule": {
       "title": "Planifier un ménage",

@@ -26,6 +26,9 @@
     "addHousekeeper": "Ajouter la femme de ménage",
     "housekeeperAssigned": "Femme de ménage assignée avec succès !",
     "requestSent": "La demande a été envoyée avec succès.",
-    "requestSentDesc": "Lorsque la candidature est acceptée, l'agent de ménage est automatiquement associé au logement sélectionné."
+    "requestSentDesc": "Lorsque la candidature est acceptée, l'agent de ménage est automatiquement associé au logement sélectionné.",
+    "statusRequested": "Demande envoyée",
+    "statusAdded": "Déjà ajoutée",
+    "statusRefused": "Refusée — renvoyer"
   }
 }

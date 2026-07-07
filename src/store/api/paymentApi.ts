@@ -36,7 +36,7 @@ export const paymentApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
       transformResponse: (res: ApiEnvelope<PayIntent>) => res.data,
-      invalidatesTags: ['Payment', 'Schedule'],
+      invalidatesTags: ['Payment', 'Schedule', 'Calendar'],
     }),
 
     // Host/cleaner: my payments (?status & page & limit).

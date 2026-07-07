@@ -71,12 +71,20 @@ export default function Step3Page() {
           {t('photoHint')}
         </p>
 
-        <button
-          onClick={handleContinue}
-          className="w-full h-12 bg-black hover:bg-gray-900 text-white font-medium rounded-xl transition-colors shadow-sm"
-        >
-          {c('continue')}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/dashboard/housing/create/step-2')}
+            className="h-12 px-6 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-colors shadow-sm"
+          >
+            {c('back')}
+          </button>
+          <button
+            onClick={handleContinue}
+            className="flex-1 h-12 bg-black hover:bg-gray-900 text-white font-medium rounded-xl transition-colors shadow-sm"
+          >
+            {c('continue')}
+          </button>
+        </div>
 
       </div>
     </div>

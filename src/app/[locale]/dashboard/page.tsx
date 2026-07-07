@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, Time02Icon } from '@hugeicons/core-free-icons';
+import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, ArrowLeft01Icon, Time02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetHostDashboardQuery } from '@/store/api/accommodationApi';
@@ -41,25 +42,34 @@ const timeAgo = (d: string | undefined, t: (key: string, values?: Record<string,
   return t('daysAgo', { count: days });
 };
 
-// Route a to-do event to the matching task screen.
-const todoHref = (status: string): string => {
-  switch (status) {
-    case 'completed': return '/dashboard/tasks/completed';
-    case 'refused': return '/dashboard/tasks/refused';
-    case 'disputed': return '/dashboard/tasks/problem';
-    case 'cancelled': return '/dashboard/tasks/reschedule';
-    default: return '/dashboard/tasks/accepted';
-  }
+// Route a to-do event to the matching detail screen. Schedule events open the
+// real cleaning-detail page (proof / dispute / validate); assignment events open
+// the accommodation they belong to.
+const todoTarget = (task: any): string => {
+  if (task.kind === 'schedule' && task.scheduleId) return `/dashboard/tasks/${task.scheduleId}`;
+  const accId = task.accommodation?._id;
+  return accId ? `/dashboard/housing/${accId}` : '/dashboard';
 };
 const isNegative = (status: string) => ['refused', 'disputed', 'cancelled'].includes(status);
 
 export default function DashboardHome() {
   const t = useTranslations('Dashboard.home');
   const router = useRouter();
-  const { data, isLoading } = useGetHostDashboardQuery();
+
+  // The To Do feed is paginated server-side (?page & ?limit on the dashboard
+  // endpoint). Recommended schedule comes back on every page but is stable.
+  const TODO_PAGE_SIZE = 5;
+  const [todoPage, setTodoPage] = useState(1);
+  const { data, isLoading, isFetching } = useGetHostDashboardQuery({ page: todoPage, limit: TODO_PAGE_SIZE });
 
   const recommendedData = data?.recommended_schedule ?? [];
   const todoData = (data?.to_do?.data ?? []) as any[];
+  const totalTodoPages = Math.max(1, data?.to_do?.meta?.totalPage ?? 1);
+
+  // If the total shrinks (items resolved elsewhere), pull the page back in range.
+  useEffect(() => {
+    if (todoPage > totalTodoPages) setTodoPage(totalTodoPages);
+  }, [todoPage, totalTodoPages]);
 
   return (
     <>
@@ -117,7 +127,15 @@ export default function DashboardHome() {
               {(recommendedData as any[]).map((item, index) => (
                 <div
                   key={index}
-                  onClick={() => router.push('/dashboard/schedule/details?source=recommended')}
+                  onClick={() => {
+                    const params = new URLSearchParams({ source: 'recommended' });
+                    const accId = item.accommodation?._id;
+                    if (accId) params.set('accommodationId', String(accId));
+                    if (item.recommendedDate) params.set('date', String(item.recommendedDate).slice(0, 10));
+                    if (item.checkInTime) params.set('checkIn', String(item.checkInTime));
+                    if (item.checkOutTime) params.set('checkOut', String(item.checkOutTime));
+                    router.push(`/dashboard/schedule/details?${params.toString()}`);
+                  }}
                   className="bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex gap-4 relative hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <div className="w-[150px] shrink-0 rounded-xl overflow-hidden bg-gray-200 relative">
@@ -205,7 +223,7 @@ export default function DashboardHome() {
               {todoData.map((task, index) => (
                 <div
                   key={task.scheduleId || task.assignmentId || index}
-                  onClick={() => router.push(todoHref(task.status))}
+                  onClick={() => router.push(todoTarget(task))}
                   className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
@@ -229,6 +247,27 @@ export default function DashboardHome() {
                   </div>
                 </div>
               ))}
+
+              {/* Pagination controls */}
+              {totalTodoPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <button
+                    onClick={() => setTodoPage((p) => Math.max(1, p - 1))}
+                    disabled={todoPage === 1 || isFetching}
+                    className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <HugeiconsIcon icon={ArrowLeft01Icon} className="w-4 h-4" />
+                  </button>
+                  <span className="text-[13px] font-medium text-gray-600 px-2">{todoPage} / {totalTodoPages}</span>
+                  <button
+                    onClick={() => setTodoPage((p) => Math.min(totalTodoPages, p + 1))}
+                    disabled={todoPage === totalTodoPages || isFetching}
+                    className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm py-16 flex items-center justify-center">

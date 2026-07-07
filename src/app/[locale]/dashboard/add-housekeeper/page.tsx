@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -15,6 +15,8 @@ import { useFindHousekeepersQuery } from '@/store/api/assignmentApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { useTranslations } from 'next-intl';
 
+const PAGE_SIZE = 10;
+
 export default function AddHousekeeperPage() {
   const t = useTranslations('AddHousekeeper');
   const router = useRouter();
@@ -23,11 +25,65 @@ export default function AddHousekeeperPage() {
   const housingId = searchParams.get('housingId');
 
   const [search, setSearch] = useState('');
-  const { data, isLoading } = useFindHousekeepersQuery({ search });
-  const housekeepers = (data?.data ?? []) as any[];
+  const [page, setPage] = useState(1);
+  // Accumulated results across the pages the user has scrolled through.
+  const [items, setItems] = useState<any[]>([]);
+
+  const { data, isFetching } = useFindHousekeepersQuery({ search, page, limit: PAGE_SIZE });
+  const totalPage = data?.meta?.totalPage ?? 1;
+  const hasMore = page < totalPage;
+
+  // A new search term always restarts from the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  // Merge each freshly-fetched page into the running list (page 1 replaces).
+  useEffect(() => {
+    if (isFetching || !data) return;
+    setItems((prev) => {
+      if ((data.meta?.page ?? 1) <= 1) return data.data as any[];
+      const seen = new Set(prev.map((x) => x._id));
+      return [...prev, ...(data.data as any[]).filter((x) => !seen.has(x._id))];
+    });
+  }, [data, isFetching]);
+
+  // Infinite scroll: when the sentinel enters the scroll box, load the next page.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
+          setPage((p) => p + 1);
+        }
+      },
+      { root: scrollRef.current, rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, isFetching]);
 
   const fallbackAvatar = (name: string) =>
     `https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=${encodeURIComponent(name || 'Housekeeper')}`;
+
+  // First load (nothing accumulated yet) shows the skeleton list.
+  const firstLoading = isFetching && items.length === 0;
+
+  const HousekeeperSkeleton = () => (
+    <div className="bg-[#FAFAFA] rounded-2xl p-5 flex items-start gap-4">
+      <SkeletonCircle size={56} />
+      <div className="flex flex-col flex-1 gap-2">
+        <Skeleton className="h-4 w-1/3 rounded" />
+        <Skeleton className="h-3 w-1/4 rounded" />
+        <Skeleton className="h-3 w-2/5 rounded" />
+        <Skeleton className="h-3 w-full rounded mt-1" />
+        <Skeleton className="h-3 w-3/4 rounded" />
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full flex flex-col animate-in fade-in zoom-in-95 duration-500">
@@ -45,26 +101,18 @@ export default function AddHousekeeperPage() {
       <div className="w-full max-w-[600px] mx-auto">
         <h3 className="text-[12px] text-gray-500 mb-4 px-1">{t('housekeepersNearby')}</h3>
 
-        {isLoading ? (
+        <div ref={scrollRef} className="h-[50vh] overflow-y-auto pr-1">
+        {firstLoading ? (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-[#FAFAFA] rounded-2xl p-5 flex items-start gap-4">
-                <SkeletonCircle size={56} />
-                <div className="flex flex-col flex-1 gap-2">
-                  <Skeleton className="h-4 w-1/3 rounded" />
-                  <Skeleton className="h-3 w-1/4 rounded" />
-                  <Skeleton className="h-3 w-2/5 rounded" />
-                  <Skeleton className="h-3 w-full rounded mt-1" />
-                  <Skeleton className="h-3 w-3/4 rounded" />
-                </div>
-              </div>
+              <HousekeeperSkeleton key={i} />
             ))}
           </div>
-        ) : housekeepers.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="text-center text-[13px] text-gray-400 py-12">{t('noHousekeepersFound')}</div>
         ) : (
           <div className="flex flex-col gap-4">
-            {housekeepers.map((hk) => {
+            {items.map((hk) => {
               const name = hk.name || `${hk.firstName ?? ''} ${hk.lastName ?? ''}`.trim();
               const location = hk.interventionZone || hk.workCity;
               const cleanings = hk.cleaningsCompleted ?? 0;
@@ -104,8 +152,15 @@ export default function AddHousekeeperPage() {
                 </div>
               );
             })}
+
+            {/* Loading indicator for the next page while scrolling. */}
+            {isFetching && page > 1 && <HousekeeperSkeleton />}
+
+            {/* Sentinel — observed to trigger the next page load. */}
+            {hasMore && <div ref={sentinelRef} className="h-4" />}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

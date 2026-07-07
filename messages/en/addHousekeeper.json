@@ -26,6 +26,9 @@
     "addHousekeeper": "Add Housekeeper",
     "housekeeperAssigned": "Housekeeper successfully assigned!",
     "requestSent": "Request has been successfully sent.",
-    "requestSentDesc": "When the application is accepted, the cleaning agent is automatically associated with the selected accommodation."
+    "requestSentDesc": "When the application is accepted, the cleaning agent is automatically associated with the selected accommodation.",
+    "statusRequested": "Request sent",
+    "statusAdded": "Already added",
+    "statusRefused": "Declined — send again"
   }
 }

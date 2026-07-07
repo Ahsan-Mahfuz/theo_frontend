@@ -45,8 +45,18 @@
       "addressPlaceholder": "15 Rue de la Paix, 75002 Paris",
       "cityLabel": "City",
       "selectCity": "Select a city",
+      "cityPlaceholder": "Paris",
       "zipLabel": "Zip code",
-      "zipPlaceholder": "75002"
+      "zipPlaceholder": "75002",
+      "errors": {
+        "name": "Please enter the accommodation name.",
+        "type": "Please select a type.",
+        "address": "Please enter the address.",
+        "addressShort": "Address must be at least 5 characters.",
+        "city": "Please select a city.",
+        "zip": "Please enter the zip code."
+      },
+      "typeOther": "Other"
     },
     "step2": {
       "heading": "Accommodation details",
@@ -64,7 +74,12 @@
       "cleaningRatePlaceholder": "55.00 €",
       "cleaningRateHint": "Amount that you pay for each cleaning.",
       "notesLabel": "Notes (optional)",
-      "notesPlaceholder": "Ex: Bright, quiet apartment..."
+      "notesPlaceholder": "Ex: Bright, quiet apartment...",
+      "errors": {
+        "rooms": "Please select the number of rooms.",
+        "surface": "Please enter the surface.",
+        "surfaceInvalid": "Enter a valid surface in m²."
+      }
     },
     "step3": {
       "heading": "Accommodation photo",
@@ -188,7 +203,9 @@
       "frequencyLabel": "Usual frequency",
       "selectFrequency": "Select frequency",
       "everyWeek": "Every week",
-      "every2Weeks": "Every 2 weeks"
+      "every2Weeks": "Every 2 weeks",
+      "typeOther": "Other",
+      "typeStudio": "Studio"
     },
     "schedule": {
       "title": "Schedule a cleaning",

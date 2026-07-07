@@ -6,8 +6,10 @@ import { useTranslations } from 'next-intl';
 import { Tick02Icon, Calendar01Icon, Time02Icon, UserIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useScheduleContext } from '../ScheduleContext';
+import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { useGetAccommodationCleanersQuery } from '@/store/api/assignmentApi';
-import type { Housekeeper } from '@/store/types';
+import type { CleanerAssignment, Housekeeper } from '@/store/types';
+import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
 
 export default function ScheduleSuccessPage() {
   const router = useRouter();
@@ -15,16 +17,26 @@ export default function ScheduleSuccessPage() {
   const c = useTranslations('Common');
   const { data } = useScheduleContext();
 
+  const { data: property } = useGetAccommodationByIdQuery(data.propertyId ?? '', {
+    skip: !data.propertyId,
+  });
+
   const { data: cleaners } = useGetAccommodationCleanersQuery(data.propertyId ?? '', {
     skip: !data.propertyId,
   });
 
-  const chosen = cleaners?.find((c) => {
-    const cl = typeof c.cleaner === 'object' ? (c.cleaner as Housekeeper) : null;
-    return cl?._id === data.primaryCleanerId;
-  });
+  const accepted = (cleaners ?? []).filter((c) => c.status === 'accepted');
+  const chosen: CleanerAssignment | undefined =
+    accepted.find((c) => {
+      const cl = typeof c.cleaner === 'object' ? (c.cleaner as Housekeeper) : null;
+      return cl?._id === data.primaryCleanerId;
+    }) ||
+    accepted.find((c) => c.role === 'primary') ||
+    accepted[0];
   const chosenCleaner =
     chosen && typeof chosen.cleaner === 'object' ? (chosen.cleaner as Housekeeper) : null;
+
+  const price = computeSchedulePrice(chosen?.pricePerCleaning, property?.cleaningRate);
   const cleanerName = chosenCleaner
     ? chosenCleaner.name ||
       [chosenCleaner.firstName, chosenCleaner.lastName].filter(Boolean).join(' ') ||
@@ -46,9 +58,9 @@ export default function ScheduleSuccessPage() {
           <HugeiconsIcon icon={Tick02Icon} className="w-8 h-8 text-white" />
         </div>
 
-        <h2 className="text-[20px] font-bold text-gray-900 mb-2 text-center">{t('paymentSuccessful')}</h2>
+        <h2 className="text-[20px] font-bold text-gray-900 mb-2 text-center">{t('scheduleCreated')}</h2>
         <p className="text-[12px] text-gray-500 text-center mb-8 max-w-[280px]">
-          {t('escrowNote')}
+          {t('scheduleCreatedNote')}
         </p>
 
         <div className="w-full flex flex-col gap-1 mb-8">
@@ -90,16 +102,12 @@ export default function ScheduleSuccessPage() {
           <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 mb-4">
             <div className="flex justify-between items-center">
                <span className="text-[12px] text-gray-500">{t('cleaningService')}</span>
-               <span className="text-[12px] font-medium text-gray-900">55,00 €</span>
-            </div>
-            <div className="flex justify-between items-center">
-               <span className="text-[12px] text-gray-500">{t('serviceFee')}</span>
-               <span className="text-[12px] font-medium text-gray-900">3,00 €</span>
+               <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.total)}</span>
             </div>
           </div>
           <div className="flex justify-between items-center">
              <span className="text-[13px] font-bold text-gray-900">{t('total')}</span>
-             <span className="text-[13px] font-bold text-gray-900">58,00 €</span>
+             <span className="text-[13px] font-bold text-gray-900">{formatEuro(price.total)}</span>
           </div>
         </div>
 

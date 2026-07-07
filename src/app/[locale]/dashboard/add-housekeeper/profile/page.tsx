@@ -38,6 +38,13 @@ export default function HousekeeperProfilePage() {
   const handleAddHousekeeper = async () => {
     if (!id) return;
     setErrorMsg('');
+    // No housing context yet (entered from the dashboard, not a specific
+    // property): send the host to the select-accommodation step, where we
+    // surface any existing requests/assignments for this cleaner.
+    if (!housingId) {
+      router.push(`/dashboard/add-housekeeper/select?id=${id}`);
+      return;
+    }
     try {
       await assignCleaner({
         accommodationId: housingId,

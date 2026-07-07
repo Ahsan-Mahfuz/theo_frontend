@@ -11,11 +11,21 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
+import { baseApi } from '@/store/api/baseApi';
+import { useAppDispatch } from '@/store/hooks';
 
 export default function PaymentSuccessPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = React.use(params);
   const t = useTranslations('Housing.success');
   const c = useTranslations('Common');
+  const dispatch = useAppDispatch();
+
+  // Payment just confirmed (Stripe redirected here). The webhook has flipped the
+  // schedule to paid_held server-side, so drop the cached Schedule/Calendar/Payment
+  // data — otherwise Planning's calendar month keeps showing a stale "Pay now".
+  React.useEffect(() => {
+    dispatch(baseApi.util.invalidateTags(['Schedule', 'Calendar', 'Payment', 'HostDashboard']));
+  }, [dispatch]);
 
   const { data: accommodation } = useGetAccommodationByIdQuery(resolvedParams.id);
   const cleaners = (accommodation?.assignedCleaners ?? []) as any[];

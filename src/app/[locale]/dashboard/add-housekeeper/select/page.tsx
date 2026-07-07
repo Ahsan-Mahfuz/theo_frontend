@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Location01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
-import { useAssignCleanerMutation } from '@/store/api/assignmentApi';
+import { useAssignCleanerMutation, useGetCleanerAssignmentsQuery } from '@/store/api/assignmentApi';
 import { useGetAccommodationsQuery } from '@/store/api/accommodationApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { getApiErrorMessage } from '@/lib/apiError';
@@ -24,6 +24,15 @@ export default function SelectAccommodationPage() {
 
   const { data, isLoading } = useGetAccommodationsQuery({ limit: 50 });
   const accommodations = (data?.data ?? []) as any[];
+
+  // Existing requests/assignments this cleaner already has across the host's
+  // properties — used to badge each accommodation and block duplicates.
+  const { data: cleanerAssignments } = useGetCleanerAssignmentsQuery(id as string, { skip: !id });
+  const statusByAccommodation = React.useMemo(() => {
+    const map = new Map<string, 'pending' | 'accepted' | 'refused'>();
+    (cleanerAssignments ?? []).forEach((a) => map.set(String(a.accommodation), a.status));
+    return map;
+  }, [cleanerAssignments]);
 
   const [assignCleaner, { isLoading: isAssigning }] = useAssignCleanerMutation();
 
@@ -49,7 +58,7 @@ export default function SelectAccommodationPage() {
         <p className="text-[13px] text-gray-500">{t('selectAccommodationDesc')}</p>
       </div>
 
-      <div className="w-full max-w-[500px] flex flex-col gap-3 mb-6">
+      <div className="w-full max-w-[500px] max-h-[50vh] overflow-y-auto pr-1 flex flex-col gap-3 mb-6">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="w-full rounded-2xl border border-gray-100 bg-white p-2 flex items-center justify-between">
@@ -72,18 +81,33 @@ export default function SelectAccommodationPage() {
           accommodations.map((acc) => {
             const photo = resolveAssetUrl(acc.photos?.[0]) || 'https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=Home';
             const isSelected = selectedAccommodation === acc._id;
+            const status = statusByAccommodation.get(String(acc._id));
+            // Pending or already-added cleaners can't be re-requested here;
+            // a previously declined cleaner can be invited again.
+            const locked = status === 'pending' || status === 'accepted';
+            const badge =
+              status === 'pending' ? { text: t('statusRequested'), cls: 'bg-amber-50 text-amber-600' }
+              : status === 'accepted' ? { text: t('statusAdded'), cls: 'bg-emerald-50 text-emerald-600' }
+              : status === 'refused' ? { text: t('statusRefused'), cls: 'bg-gray-100 text-gray-500' }
+              : null;
             return (
               <div
                 key={acc._id}
-                onClick={() => setSelectedAccommodation(acc._id)}
-                className={`w-full rounded-2xl border p-2 flex items-center justify-between cursor-pointer transition-colors ${isSelected ? 'border-gray-400 bg-[#FAFAFA]' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                onClick={() => { if (!locked) setSelectedAccommodation(acc._id); }}
+                aria-disabled={locked}
+                className={`w-full rounded-2xl border p-2 flex items-center justify-between transition-colors ${locked ? 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed' : isSelected ? 'border-gray-400 bg-[#FAFAFA] cursor-pointer' : 'border-gray-100 bg-white hover:border-gray-300 cursor-pointer'}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-[100px] h-16 rounded-xl overflow-hidden relative bg-gray-200 shrink-0">
                     <AppImage src={photo} alt={acc.name} fill className="object-cover" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-bold text-gray-900 mb-0.5">{acc.name}</span>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[13px] font-bold text-gray-900">{acc.name}</span>
+                      {badge && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.cls}`}>{badge.text}</span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <HugeiconsIcon icon={Location01Icon} className="w-3.5 h-3.5 text-gray-400" />
                       <span className="text-[11px] text-gray-500">{acc.city}</span>

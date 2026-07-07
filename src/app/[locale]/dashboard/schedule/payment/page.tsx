@@ -9,8 +9,9 @@ import { useScheduleContext } from '../ScheduleContext';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { useGetAccommodationCleanersQuery } from '@/store/api/assignmentApi';
 import { useCreateScheduleMutation } from '@/store/api/scheduleApi';
-import type { Housekeeper } from '@/store/types';
+import type { CleanerAssignment, Housekeeper } from '@/store/types';
 import { resolveAssetUrl } from '@/lib/config';
+import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage } from '@/components/ui/app-image';
 
@@ -20,7 +21,7 @@ const FALLBACK_ROOM =
 export default function SchedulePaymentPage() {
   const router = useRouter();
   const t = useTranslations('Schedule');
-  const { data, updateData } = useScheduleContext();
+  const { data } = useScheduleContext();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [createSchedule, { isLoading }] = useCreateScheduleMutation();
@@ -43,28 +44,41 @@ export default function SchedulePaymentPage() {
         .join(', ')
     : '';
 
-  const chosen = cleaners?.find((c) => {
-    const cl = typeof c.cleaner === 'object' ? (c.cleaner as Housekeeper) : null;
-    return cl?._id === data.primaryCleanerId;
-  });
+  // Prefer the cleaner picked on the details page; fall back to the accepted
+  // primary so a lost/empty primaryCleanerId doesn't block confirmation.
+  const accepted = (cleaners ?? []).filter((c) => c.status === 'accepted');
+  const chosen: CleanerAssignment | undefined =
+    accepted.find((c) => {
+      const cl = typeof c.cleaner === 'object' ? (c.cleaner as Housekeeper) : null;
+      return cl?._id === data.primaryCleanerId;
+    }) ||
+    accepted.find((c) => c.role === 'primary') ||
+    accepted[0];
   const chosenCleaner =
     chosen && typeof chosen.cleaner === 'object' ? (chosen.cleaner as Housekeeper) : null;
+  const chosenCleanerId = chosenCleaner?._id ?? data.primaryCleanerId;
   const cleanerName = chosenCleaner
     ? chosenCleaner.name ||
       [chosenCleaner.firstName, chosenCleaner.lastName].filter(Boolean).join(' ') ||
       'Cleaner'
     : '---';
 
+  const price = computeSchedulePrice(chosen?.pricePerCleaning, property?.cleaningRate);
+
   const handleConfirm = async () => {
     setErrorMsg(null);
-    if (!data.propertyId || !data.primaryCleanerId) {
+    if (!data.propertyId || !chosenCleanerId) {
+      setErrorMsg(t('selectPropertyAndCleaner'));
+      return;
+    }
+    if (!data.date || !data.checkInTime || !data.checkOutTime) {
       setErrorMsg(t('selectPropertyAndCleaner'));
       return;
     }
     try {
       await createSchedule({
         accommodationId: data.propertyId,
-        cleanerId: data.primaryCleanerId,
+        cleanerId: chosenCleanerId,
         date: data.date,
         checkInTime: data.checkInTime,
         checkOutTime: data.checkOutTime,
@@ -126,42 +140,12 @@ export default function SchedulePaymentPage() {
           <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 mb-4">
             <div className="flex justify-between items-center">
                <span className="text-[12px] text-gray-500">{t('cleaningService')}</span>
-               <span className="text-[12px] font-medium text-gray-900">55,00 €</span>
-            </div>
-            <div className="flex justify-between items-center">
-               <span className="text-[12px] text-gray-500">{t('serviceFee')}</span>
-               <span className="text-[12px] font-medium text-gray-900">3,00 €</span>
+               <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.total)}</span>
             </div>
           </div>
           <div className="flex justify-between items-center">
              <span className="text-[13px] font-bold text-gray-900">{t('totalToPay')}</span>
-             <span className="text-[13px] font-bold text-gray-900">58,00 €</span>
-          </div>
-        </div>
-
-        {/* Payment Methods */}
-        <div className="flex flex-col">
-          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-4">{t('paymentMethodLabel')}</span>
-
-          <div className="flex flex-col gap-2">
-            {[
-              { id: 'card', name: t('card'), icon: '💳' },
-              { id: 'apple_pay', name: 'Apple Pay', icon: 'Pay' },
-              { id: 'google_pay', name: 'Google Pay', icon: 'GPay' }
-            ].map((method) => (
-              <div
-                key={method.id}
-                onClick={() => updateData({ paymentMethod: method.id })}
-                className="w-full h-14 bg-[#FAFAFA] rounded-xl px-4 flex items-center justify-between cursor-pointer border border-transparent hover:border-gray-200 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${data.paymentMethod === method.id ? 'border-[#0084FF]' : 'border-gray-300'}`}>
-                    {data.paymentMethod === method.id && <div className="w-2 h-2 rounded-full bg-[#0084FF]"></div>}
-                  </div>
-                  <span className="text-[14px] font-medium text-gray-900">{method.icon} <span className="ml-2">{method.name}</span></span>
-                </div>
-              </div>
-            ))}
+             <span className="text-[13px] font-bold text-gray-900">{formatEuro(price.total)}</span>
           </div>
         </div>
 

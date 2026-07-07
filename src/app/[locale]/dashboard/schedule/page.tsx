@@ -41,7 +41,7 @@ export default function SelectPropertyPage() {
         <p className="text-[13px] text-gray-500">{t('choosePropertySubtitle')}</p>
       </div>
 
-      <div className="w-full max-w-[500px] flex flex-col gap-3 mb-6">
+      <div className="w-full max-w-[500px] flex flex-col gap-3 mb-6 h-[50vh] overflow-y-auto pr-1">
         {isLoading &&
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="w-full rounded-2xl border border-gray-100 bg-white p-3 flex items-start justify-between">
