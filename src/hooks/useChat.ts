@@ -27,6 +27,12 @@ type UseChatArgs = {
   conversationId: string | null;
   meId?: string;
   otherUserId?: string;
+  /**
+   * All of the current user's conversation ids. We join every one of these
+   * socket rooms so live `message:new` events arrive for background threads too
+   * (not just the open one) — that's what keeps the sidebar unread badge live.
+   */
+  conversationIds?: string[];
 };
 
 /**
@@ -34,7 +40,7 @@ type UseChatArgs = {
  * presence, typing, live delivery, read receipts, edit and delete — keeping the
  * RTK Query `getMessages` cache in sync so the UI updates in real time.
  */
-export function useChat({ conversationId, meId, otherUserId }: UseChatArgs) {
+export function useChat({ conversationId, meId, otherUserId, conversationIds }: UseChatArgs) {
   const token = useAppSelector((s) => s.auth.token);
   const dispatch = useAppDispatch();
   const [uploadChatFile, { isLoading: isUploading }] = useUploadChatFileMutation();
@@ -75,17 +81,71 @@ export function useChat({ conversationId, meId, otherUserId }: UseChatArgs) {
     const onDisconnect = () => setConnected(false);
     const onOnline = (ids: string[]) => setOnlineUserIds(Array.isArray(ids) ? ids : []);
 
+    // Delivered to the receiver's personal room for EVERY incoming message,
+    // regardless of which conversation room they're currently in. This is our
+    // safety net: `message:new` only reaches sockets that have joined the
+    // conversation room, so if that join is racy/missed the recipient would
+    // otherwise see nothing until a manual refresh. Here we refresh the sidebar
+    // and invalidate that thread's message list so it (re)loads the new message.
+    const onNotify = (p: any) => {
+      dispatch(chatApi.util.invalidateTags(['Chat']));
+      const cid = p?.conversationId;
+      if (cid) dispatch(chatApi.util.invalidateTags([{ type: 'Message', id: cid }]));
+    };
+
+    // Global new-message handler: because we join ALL of the user's conversation
+    // rooms (see the join effect below), this fires for every thread — the open
+    // one AND background ones. Patch the matching thread's cache and refresh the
+    // sidebar so the unread badge/preview update live without a click or refresh.
+    const onNew = (msg: any) => {
+      const cid = conversationIdOf(msg);
+      if (cid) {
+        patchMessages(cid, (data) => {
+          const clean: Message = { ...msg, pending: false };
+          // Reconcile an optimistic message by its tempId.
+          if (msg.tempId) {
+            const i = data.findIndex((m) => m._id === msg.tempId || m.tempId === msg.tempId);
+            if (i !== -1) {
+              data[i] = clean;
+              return;
+            }
+          }
+          if (!data.some((m) => m._id === msg._id)) data.unshift(clean);
+        });
+      }
+      dispatch(chatApi.util.invalidateTags(['Chat']));
+    };
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('users:online', onOnline);
+    socket.on('notification:message', onNotify);
+    socket.on('message:new', onNew);
     if (socket.connected) onConnect();
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('users:online', onOnline);
+      socket.off('notification:message', onNotify);
+      socket.off('message:new', onNew);
     };
-  }, [token]);
+  }, [token, dispatch, patchMessages]);
+
+  // Join every conversation room so live `message:new` events arrive for all
+  // threads, not just the active one. Re-join on (re)connect too.
+  const roomKey = (conversationIds ?? []).filter(Boolean).join(',');
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    const ids = roomKey ? roomKey.split(',') : [];
+    const joinAll = () => ids.forEach((id) => socket.emit('conversation:join', { conversationId: id }));
+    joinAll();
+    socket.on('connect', joinAll);
+    return () => {
+      socket.off('connect', joinAll);
+    };
+  }, [roomKey]);
 
   // ── Per-conversation events ──────────────────────────────────────────────────
   useEffect(() => {
@@ -94,27 +154,8 @@ export function useChat({ conversationId, meId, otherUserId }: UseChatArgs) {
 
     socket.emit('conversation:join', { conversationId });
 
-    const onNew = (msg: any) => {
-      const cid = conversationIdOf(msg);
-      if (cid !== conversationId) {
-        // Message for another thread — refresh the sidebar preview/unread.
-        dispatch(chatApi.util.invalidateTags(['Chat']));
-        return;
-      }
-      patchMessages(conversationId, (data) => {
-        const clean: Message = { ...msg, pending: false };
-        // Reconcile an optimistic message by its tempId.
-        if (msg.tempId) {
-          const i = data.findIndex((m) => m._id === msg.tempId || m.tempId === msg.tempId);
-          if (i !== -1) {
-            data[i] = clean;
-            return;
-          }
-        }
-        if (!data.some((m) => m._id === msg._id)) data.unshift(clean);
-      });
-      dispatch(chatApi.util.invalidateTags(['Chat']));
-    };
+    // Note: `message:new` is handled globally in the connection effect (we join
+    // all rooms), so it is NOT registered here — that would double-process it.
 
     const onEdited = (p: any) => {
       patchMessages(conversationId, (data) => {
@@ -160,23 +201,28 @@ export function useChat({ conversationId, meId, otherUserId }: UseChatArgs) {
       });
     };
 
-    const onTypingStart = ({ userId }: { userId: string }) => {
-      if (userId !== meIdRef.current) setIsOtherTyping(true);
+    // We're joined to every conversation room, so scope the typing indicator to
+    // the thread that's actually open (ignore typing in other conversations).
+    const onTypingStart = ({ userId, conversationId: cid }: { userId: string; conversationId?: string }) => {
+      if (userId === meIdRef.current) return;
+      if (cid && cid !== conversationId) return;
+      setIsOtherTyping(true);
     };
-    const onTypingStop = ({ userId }: { userId: string }) => {
-      if (userId !== meIdRef.current) setIsOtherTyping(false);
+    const onTypingStop = ({ userId, conversationId: cid }: { userId: string; conversationId?: string }) => {
+      if (userId === meIdRef.current) return;
+      if (cid && cid !== conversationId) return;
+      setIsOtherTyping(false);
     };
 
-    socket.on('message:new', onNew);
     socket.on('message:edited', onEdited);
     socket.on('message:deleted', onDeleted);
     socket.on('messages:read', onRead);
     socket.on('typing:start', onTypingStart);
     socket.on('typing:stop', onTypingStop);
 
+    // NOTE: we do NOT leave the room on switch — staying joined to every room is
+    // what keeps background threads live (see the join-all-rooms effect above).
     return () => {
-      socket.emit('conversation:leave', { conversationId });
-      socket.off('message:new', onNew);
       socket.off('message:edited', onEdited);
       socket.off('message:deleted', onDeleted);
       socket.off('messages:read', onRead);

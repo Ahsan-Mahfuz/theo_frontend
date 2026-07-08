@@ -69,6 +69,15 @@ export default function MessagePage() {
   const activeConversation = conversations.find((c) => c._id === activeConversationId);
   const otherUserId = participantId(activeConversation?.otherParticipant);
 
+  // Stable list of all my conversation ids — passed to useChat so it can join
+  // every conversation room and keep background threads live. Keyed by the joined
+  // ids so the reference only changes when a conversation is added/removed.
+  const conversationIdsKey = conversations.map((c) => c._id).join(',');
+  const conversationIds = useMemo(
+    () => (conversationIdsKey ? conversationIdsKey.split(',') : []),
+    [conversationIdsKey],
+  );
+
   const {
     isOtherOnline,
     isOtherTyping,
@@ -80,7 +89,12 @@ export default function MessagePage() {
     deleteMessage,
     markRead,
     notifyTyping,
-  } = useChat({ conversationId: activeConversationId, meId: me?._id, otherUserId });
+  } = useChat({
+    conversationId: activeConversationId,
+    meId: me?._id,
+    otherUserId,
+    conversationIds,
+  });
 
   // Open the conversation requested via ?conversationId= (e.g. a "Message" button).
   useEffect(() => {
@@ -105,7 +119,10 @@ export default function MessagePage() {
 
   const { data: messagesData, isLoading: isLoadingMessages } = useGetMessagesQuery(
     { conversationId: activeConversationId as string },
-    { skip: !activeConversationId },
+    // Always reload when opening/switching a thread so a background conversation
+    // that received new messages (while we weren't subscribed to it) never shows
+    // a stale cached list. Realtime patches keep the active thread live on top.
+    { skip: !activeConversationId, refetchOnMountOrArgChange: true },
   );
 
   const messages = useMemo(
@@ -343,8 +360,8 @@ export default function MessagePage() {
 
                 return (
                   <div key={message._id} className={`group flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
-                    <div className={`flex items-center gap-1.5 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className={`max-w-[70%] ${pad} rounded-2xl text-[13px] ${tone} ${message.pending ? 'opacity-60' : ''}`}>
+                    <div className={`flex items-center gap-1.5 max-w-[85%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`min-w-0 ${pad} rounded-2xl text-[13px] [overflow-wrap:anywhere] ${tone} ${message.pending ? 'opacity-60' : ''}`}>
                         {message.isDeleted ? (
                           <span className="italic opacity-70">This message was deleted</span>
                         ) : (
@@ -373,7 +390,7 @@ export default function MessagePage() {
                               </a>
                             )}
                             {message.content && (
-                              <span className={isImage || isFile ? 'block mt-1.5' : ''}>{message.content}</span>
+                              <span className={`whitespace-pre-wrap ${isImage || isFile ? 'block mt-1.5' : ''}`}>{message.content}</span>
                             )}
                             {message.isEdited && (
                               <span className={`ml-1.5 text-[10px] align-baseline ${isMine ? 'text-white/60' : 'text-gray-400'}`}>· edited</span>
@@ -384,7 +401,7 @@ export default function MessagePage() {
 
                       {/* Actions menu (own, non-deleted messages) */}
                       {(canEdit || canDelete) && (
-                        <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === message._id ? null : message._id); }}
