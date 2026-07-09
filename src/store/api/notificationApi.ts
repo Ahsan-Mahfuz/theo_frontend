@@ -24,10 +24,16 @@ export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<
       NotificationList,
-      { page?: number; limit?: number; isRead?: boolean } | void
+      { page?: number; limit?: number; isRead?: boolean; type?: string } | void
     >({
       query: (params) => ({ url: '/notification', params: params ?? {} }),
       transformResponse: (res: ApiEnvelope<NotificationList>) => res.data,
+      providesTags: ['Notification'],
+    }),
+
+    getUnreadCount: builder.query<{ unreadCount: number }, void>({
+      query: () => ({ url: '/notification/unread-count' }),
+      transformResponse: (res: ApiEnvelope<{ unreadCount: number }>) => res.data,
       providesTags: ['Notification'],
     }),
 
@@ -40,11 +46,18 @@ export const notificationApi = baseApi.injectEndpoints({
       query: () => ({ url: '/notification/read-all', method: 'PATCH' }),
       invalidatesTags: ['Notification'],
     }),
+
+    deleteNotification: builder.mutation<ApiEnvelope<null>, string>({
+      query: (id) => ({ url: `/notification/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Notification'],
+    }),
   }),
 });
 
 export const {
   useGetNotificationsQuery,
+  useGetUnreadCountQuery,
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
+  useDeleteNotificationMutation,
 } = notificationApi;

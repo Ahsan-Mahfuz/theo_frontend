@@ -11,6 +11,7 @@ import { useGetMeQuery } from '@/store/api/authApi';
 import { useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/authSlice';
 import { resolveAssetUrl } from '@/lib/config';
+import { NotificationBell } from './notification-bell';
 
 const FALLBACK_AVATAR = 'https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=';
 
@@ -85,7 +86,8 @@ export function DashboardHeader() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-6 relative" ref={dropdownRef}>
+      <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+        <NotificationBell />
         <div
           className="relative w-10 h-10 rounded-full bg-gray-300 cursor-pointer overflow-hidden border border-gray-200"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
