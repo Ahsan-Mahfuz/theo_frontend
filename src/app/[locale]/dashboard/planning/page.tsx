@@ -75,6 +75,15 @@ const SCHED_STATUS: Record<string, string> = {
   cancelled: 'bg-gray-100 text-gray-500',
 };
 
+// Booking platform → dot colour on occupied calendar days.
+const PLATFORM_DOT: Record<string, string> = {
+  airbnb: 'bg-[#FF5A5F]',
+  booking: 'bg-[#0071C2]',
+  vrbo: 'bg-[#002B49]',
+};
+const platformDot = (platform?: string) =>
+  (platform && PLATFORM_DOT[platform]) || 'bg-gray-400';
+
 const ringFor = (status: string) => {
   if (status === 'accepted' || status === 'completed') return 'ring-[#48C79D]';
   if (status === 'refused' || status === 'disputed') return 'ring-[#FF4D4F]';
@@ -389,27 +398,47 @@ export default function PlanningPage() {
     [year, month, locale],
   );
 
-  // Per-day maps for the calendar grid.
-  const { bookedDays, schedByDay, daysInMonth, leadingBlanks } = useMemo(() => {
-    const dim = new Date(year, month, 0).getDate();
-    const booked = new Set<number>();
-    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    for (const b of monthData?.bookings ?? []) {
-      const s = startOfDay(new Date(b.startDate));
-      const e = startOfDay(new Date(b.endDate)); // checkout day = free
-      for (let d = 1; d <= dim; d++) {
-        const day = new Date(year, month - 1, d);
-        if (day >= s && day < e) booked.add(d);
+  // Per-day maps for the calendar grid. A booking [startDate, endDate) keeps the
+  // guest in the unit on every night from startDate up to — but not including —
+  // the checkout day (endDate). The checkout day is left free: that's when the
+  // cleaning is meant to happen, so we mark it distinctly rather than as booked.
+  const { bookedDays, checkoutDays, platformByDay, schedByDay, daysInMonth, leadingBlanks } =
+    useMemo(() => {
+      const dim = new Date(year, month, 0).getDate();
+      const booked = new Set<number>();
+      const checkout = new Set<number>();
+      const platform = new Map<number, string>();
+      const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      for (const b of monthData?.bookings ?? []) {
+        const s = startOfDay(new Date(b.startDate));
+        const e = startOfDay(new Date(b.endDate)); // checkout day = free
+        for (let d = 1; d <= dim; d++) {
+          const day = new Date(year, month - 1, d);
+          if (day >= s && day < e) {
+            booked.add(d);
+            platform.set(d, b.platform);
+          }
+        }
+        // Flag the checkout day if it lands in this month (and isn't itself the
+        // start of a back-to-back booking, in which case it stays occupied).
+        if (e.getFullYear() === year && e.getMonth() === month - 1) checkout.add(e.getDate());
       }
-    }
-    const byDay = new Map<number, MonthData['schedules'][number]>();
-    for (const sc of monthData?.schedules ?? []) {
-      const d = new Date(sc.date);
-      if (d.getFullYear() === year && d.getMonth() === month - 1) byDay.set(d.getDate(), sc);
-    }
-    const firstIdx = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Mon=0
-    return { bookedDays: booked, schedByDay: byDay, daysInMonth: dim, leadingBlanks: firstIdx };
-  }, [monthData, year, month]);
+      for (const d of checkout) if (booked.has(d)) checkout.delete(d);
+      const byDay = new Map<number, MonthData['schedules'][number]>();
+      for (const sc of monthData?.schedules ?? []) {
+        const d = new Date(sc.date);
+        if (d.getFullYear() === year && d.getMonth() === month - 1) byDay.set(d.getDate(), sc);
+      }
+      const firstIdx = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Mon=0
+      return {
+        bookedDays: booked,
+        checkoutDays: checkout,
+        platformByDay: platform,
+        schedByDay: byDay,
+        daysInMonth: dim,
+        leadingBlanks: firstIdx,
+      };
+    }, [monthData, year, month]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const goMonth = (delta: number) => {
@@ -673,17 +702,40 @@ export default function PlanningPage() {
                       const d = i + 1;
                       const sched = schedByDay.get(d);
                       const booked = bookedDays.has(d);
+                      const isCheckout = checkoutDays.has(d);
+                      // A guest is present on booked days → cleaning is not allowed
+                      // there (enforced on the backend too). The checkout day is
+                      // free and is the recommended day to clean.
+                      const cellTone = booked
+                        ? 'bg-[#F4F4F5] border-transparent'
+                        : isCheckout
+                          ? 'bg-[#FFF7E6] border-[#FCE3B3]'
+                          : 'border-gray-100';
                       return (
                         <div
                           key={d}
-                          className={`relative h-[70px] rounded-xl border flex flex-col items-center pt-1.5 ${booked ? 'bg-[#F4F4F5] border-transparent' : 'border-gray-100'}`}
+                          className={`relative h-[70px] rounded-xl border flex flex-col items-center pt-1.5 ${cellTone}`}
                         >
-                          <span className="text-[11px] font-medium text-gray-600">{d}</span>
+                          <span className={`text-[11px] font-medium ${isCheckout ? 'text-[#B4690E]' : 'text-gray-600'}`}>{d}</span>
+
+                          {/* Occupancy / checkout label under the day number */}
+                          {booked && !sched && (
+                            <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-wide text-gray-400">
+                              <span className={`w-1 h-1 rounded-full ${platformDot(platformByDay.get(d))}`} />
+                              {t('occupied')}
+                            </span>
+                          )}
+                          {isCheckout && !sched && (
+                            <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[#D48806]">
+                              {t('checkout')}
+                            </span>
+                          )}
+
                           {sched ? (
                             <button
                               onClick={() => setDetail(sched)}
                               title={t(`status.${sched.status}` as any)}
-                              className="mt-1.5 relative"
+                              className="mt-1 relative"
                             >
                               <div className={`w-8 h-8 rounded-full overflow-hidden relative ring-2 ${ringFor(sched.status)}`}>
                                 <AppImage src={cleanerAvatarOf(sched.cleaner, t('cleaner'))} alt="cleaner" fill className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
@@ -697,11 +749,24 @@ export default function PlanningPage() {
                                 ) : null;
                               })()}
                             </button>
+                          ) : booked ? (
+                            // Guest present → no scheduling. Show a locked marker.
+                            <span
+                              title={t('occupiedHint')}
+                              className="mt-1 w-7 h-7 rounded-full bg-white/70 border border-gray-200 flex items-center justify-center text-gray-300"
+                            >
+                              <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" />
+                            </span>
                           ) : (
                             <button
                               onClick={() => openCreate({ date: dayInput(d) })}
                               disabled={acceptedCleaners.length === 0}
-                              className="mt-1.5 w-7 h-7 rounded-full bg-white border border-[#10B981] flex items-center justify-center text-[#10B981] hover:bg-green-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              title={isCheckout ? t('checkoutHint') : t('scheduleCleaning')}
+                              className={`mt-1 w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
+                                isCheckout
+                                  ? 'bg-[#D48806] border border-[#D48806] text-white hover:bg-[#B4690E]'
+                                  : 'bg-white border border-[#10B981] text-[#10B981] hover:bg-green-50'
+                              }`}
                             >
                               <HugeiconsIcon icon={Add01Icon} className="w-3.5 h-3.5" />
                             </button>
@@ -710,10 +775,27 @@ export default function PlanningPage() {
                       );
                     })}
                   </div>
+
+                  {/* Legend — what the calendar colours mean */}
+                  <div className="flex items-center justify-center gap-4 mt-6 flex-wrap text-[10px] font-medium text-gray-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-md bg-[#F4F4F5]" />
+                      {t('occupied')}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-md bg-[#FFF7E6] border border-[#FCE3B3]" />
+                      {t('checkout')}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full border border-[#10B981]" />
+                      {t('scheduleCleaning')}
+                    </span>
+                  </div>
+
                   <button
                     onClick={() => openCreate()}
                     disabled={acceptedCleaners.length === 0}
-                    className="mt-8 w-full h-12 bg-[#007AFF] text-white text-[13px] font-medium rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="mt-6 w-full h-12 bg-[#007AFF] text-white text-[13px] font-medium rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />
                     {t('addManualCleaning')}
