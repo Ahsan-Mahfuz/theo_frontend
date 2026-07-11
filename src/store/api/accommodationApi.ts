@@ -15,6 +15,7 @@ export interface AccommodationListParams {
 
 export interface HostDashboard {
   recommended_schedule: unknown[];
+  recommended_total: number;
   to_do: Paginated<unknown>;
 }
 
@@ -70,6 +71,19 @@ export const accommodationApi = baseApi.injectEndpoints({
       providesTags: ['HostDashboard'],
     }),
 
+    // Full paginated recommended-schedule list ("see all" page).
+    getRecommendedSchedules: builder.query<
+      Paginated<unknown>,
+      { page?: number; limit?: number } | void
+    >({
+      query: (params) => ({
+        url: '/accommodation/recommended-schedule',
+        params: params ?? {},
+      }),
+      transformResponse: (res: ApiEnvelope<Paginated<unknown>>) => res.data,
+      providesTags: ['HostDashboard'],
+    }),
+
     getAccommodationById: builder.query<Accommodation, string>({
       query: (id) => `/accommodation/${id}`,
       transformResponse: (res: ApiEnvelope<Accommodation>) => res.data,
@@ -102,6 +116,7 @@ export const {
   useGetHousingQuery,
   useGetPlanningQuery,
   useGetHostDashboardQuery,
+  useGetRecommendedSchedulesQuery,
   useGetAccommodationByIdQuery,
   useUpdateAccommodationMutation,
   useDeleteAccommodationMutation,
