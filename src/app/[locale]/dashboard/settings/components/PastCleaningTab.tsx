@@ -35,10 +35,16 @@ export default function PastCleaningTab() {
     status: p.status,
   }));
 
-  const totalCount = data?.meta?.total ?? payments.length;
-  const totalAmount = payments.reduce((sum, p) => sum + (p.amount || 0), 0) / 100;
-  const averageAmount = payments.length ? totalAmount / payments.length : 0;
-  const currencyLabel = payments[0]?.currency?.toUpperCase?.() ?? 'EUR';
+  // Summary cards come straight from the backend (computed over the whole
+  // dataset, not just this page), so they stay correct beyond the page limit.
+  const summary = data?.summary;
+  const totalCount = summary?.count ?? data?.meta?.total ?? payments.length;
+  const totalAmount = summary?.totalAmount ?? 0;
+  const averageAmount = summary?.averageAmount ?? 0;
+  const currencyLabel =
+    summary?.currency?.toUpperCase?.() ??
+    payments[0]?.currency?.toUpperCase?.() ??
+    'EUR';
 
   return (
     <div className="flex flex-col animate-in fade-in duration-300 w-full h-full">

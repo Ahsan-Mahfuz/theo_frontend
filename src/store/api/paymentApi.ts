@@ -17,6 +17,17 @@ export interface Payment {
   updatedAt: string;
 }
 
+// Whole-dataset summary the backend computes for /payment/my (not just the
+// current page), so the Summary cards stay correct regardless of pagination.
+export interface PaymentSummary {
+  count: number;
+  totalAmount: number;
+  averageAmount: number;
+  currency: string;
+}
+
+export type MyPayments = Paginated<Payment> & { summary: PaymentSummary };
+
 export interface PayIntent {
   paymentId: string;
   paymentIntentClientSecret: string;
@@ -92,11 +103,11 @@ export const paymentApi = baseApi.injectEndpoints({
 
     // Host/cleaner: my payments (?status & page & limit).
     getMyPayments: builder.query<
-      Paginated<Payment>,
+      MyPayments,
       { status?: string; page?: number; limit?: number } | void
     >({
       query: (params) => ({ url: '/payment/my', params: params ?? {} }),
-      transformResponse: (res: ApiEnvelope<Paginated<Payment>>) => res.data,
+      transformResponse: (res: ApiEnvelope<MyPayments>) => res.data,
       providesTags: ['Payment'],
     }),
 
