@@ -84,12 +84,12 @@ export function DashboardHeader() {
         >
           {t('message')}
         </Link>
-        <Link
+        {/* <Link
           href="/dashboard/revenue"
           className={pathname.includes('/dashboard/revenue') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
         >
           {t('revenue')}
-        </Link>
+        </Link> */}
       </div>
 
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
