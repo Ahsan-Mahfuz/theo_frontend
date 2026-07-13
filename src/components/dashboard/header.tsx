@@ -78,11 +78,17 @@ export function DashboardHeader() {
         >
           {t('housing')}
         </Link>
-        <Link 
-          href="/dashboard/message" 
+        <Link
+          href="/dashboard/message"
           className={pathname.includes('/dashboard/message') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
         >
           {t('message')}
+        </Link>
+        <Link
+          href="/dashboard/revenue"
+          className={pathname.includes('/dashboard/revenue') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
+        >
+          {t('revenue')}
         </Link>
       </div>
 
