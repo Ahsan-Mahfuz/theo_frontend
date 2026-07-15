@@ -1,5 +1,7 @@
 // Shared presentation helpers for notifications (icon accent + relative time).
 
+import { formatDate, parseDate } from './datetime';
+
 export const notificationColor = (type: string): string => {
   switch (type) {
     case 'assignment_request':
@@ -43,7 +45,9 @@ export const notificationHref = (n: {
 };
 
 export const timeAgo = (iso: string): string => {
-  const diff = Date.now() - new Date(iso).getTime();
+  const parsed = parseDate(iso);
+  if (!parsed) return '';
+  const diff = Date.now() - parsed.getTime();
   const sec = Math.round(diff / 1000);
   if (sec < 60) return 'just now';
   const min = Math.round(sec / 60);
@@ -52,5 +56,5 @@ export const timeAgo = (iso: string): string => {
   if (hr < 24) return `${hr}h ago`;
   const day = Math.round(hr / 24);
   if (day < 7) return `${day}d ago`;
-  return new Date(iso).toLocaleDateString();
+  return formatDate(iso);
 };

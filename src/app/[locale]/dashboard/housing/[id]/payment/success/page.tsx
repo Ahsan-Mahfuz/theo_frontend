@@ -10,6 +10,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
+import { formatDate } from '@/lib/datetime';
 import { useGetScheduleByIdQuery } from '@/store/api/scheduleApi';
 import { formatEuro } from '@/lib/pricing';
 import { baseApi } from '@/store/api/baseApi';
@@ -38,9 +39,7 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
   const housekeeperName =
     (cleaner && (cleaner.name || `${cleaner.firstName ?? ''} ${cleaner.lastName ?? ''}`.trim())) || '—';
 
-  const dateLabel = s?.date
-    ? new Date(s.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-    : '—';
+  const dateLabel = formatDate(s?.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
   const timeLabel = s?.checkOutTime && s?.checkInTime ? `${s.checkOutTime} → ${s.checkInTime}` : '—';
 
   // latestPayment.amount is the total charged, in the smallest currency unit (cents).

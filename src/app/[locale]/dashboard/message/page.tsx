@@ -14,6 +14,7 @@ import {
 } from '@/store/api/chatApi';
 import { useGetMeQuery } from '@/store/api/authApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatTime as formatTimeLocal } from '@/lib/datetime';
 import { useChat } from '@/hooks/useChat';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -37,12 +38,7 @@ const formatSize = (bytes?: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const formatTime = (iso?: string): string => {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
+const formatTime = (iso?: string): string => formatTimeLocal(iso);
 
 export default function MessagePage() {
   const searchParams = useSearchParams();

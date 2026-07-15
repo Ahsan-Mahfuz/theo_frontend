@@ -8,6 +8,14 @@ const rawBaseQuery = fetchBaseQuery({
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) headers.set('Authorization', `Bearer ${token}`);
+    // Tell the backend the viewer's timezone so server-computed day
+    // grouping/labels/ranges are rendered in the viewer's local time.
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) headers.set('x-timezone', tz);
+    } catch {
+      /* ignore — backend defaults to UTC */
+    }
     return headers;
   },
 });

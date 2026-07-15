@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { formatDate } from '@/lib/datetime';
 import {
   Location01Icon,
   ArrowLeft01Icon,
@@ -17,6 +18,7 @@ import {
   Link01Icon,
   CheckmarkCircle01Icon,
   Coins01Icon,
+  UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
@@ -271,11 +273,35 @@ function ScheduleModal({
         </div>
 
         {cleaners.length === 0 ? (
-          <p className="text-[13px] text-gray-500 py-6 text-center">{t('noAcceptedCleaner')}</p>
+          <div className="flex flex-col items-center gap-4 py-6">
+            <p className="text-[13px] text-gray-500 text-center">{t('noAcceptedCleaner')}</p>
+            {accommodationId && (
+              <Link
+                href={`/dashboard/housing/${accommodationId}/cleaners`}
+                onClick={onClose}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#0084FF] text-white text-[12px] font-medium hover:bg-[#0073E6]"
+              >
+                <HugeiconsIcon icon={UserGroupIcon} className="w-4 h-4" />
+                {t('manageCleaners')}
+              </Link>
+            )}
+          </div>
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-medium text-gray-700">{t('cleaner')}</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[12px] font-medium text-gray-700">{t('cleaner')}</label>
+                {accommodationId && (
+                  <Link
+                    href={`/dashboard/housing/${accommodationId}/cleaners`}
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0084FF] hover:underline"
+                  >
+                    <HugeiconsIcon icon={UserGroupIcon} className="w-3.5 h-3.5" />
+                    {t('manageCleaners')}
+                  </Link>
+                )}
+              </div>
               <select value={cleanerId} onChange={(e) => setCleanerId(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
                 {cleaners.map((cl) => (
                   <option key={cl.assignmentId} value={String(cl.cleaner?._id ?? '')}>
@@ -910,9 +936,9 @@ export default function PlanningPage() {
 
                     {!schedLoading && !schedFetching && visibleSchedules.map((s: any) => {
                       const editable = s.status === 'scheduled';
-                      const dateLabel = new Date(s.date).toLocaleDateString(locale, {
+                      const dateLabel = formatDate(s.date, {
                         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-                      });
+                      }, locale);
                       return (
                         <div key={s._id} className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl hover:border-gray-200 transition-colors">
                           <div className="flex items-center gap-4 min-w-0">
@@ -1016,7 +1042,7 @@ export default function PlanningPage() {
                 <span className="text-[14px] font-bold text-gray-900 truncate">{cleanerNameOf(detail.cleaner, t('cleaner'))}</span>
                 <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
                   <HugeiconsIcon icon={Clock01Icon} className="w-3.5 h-3.5" />
-                  {new Date(detail.date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })} · {detail.checkInTime}–{detail.checkOutTime}
+                  {formatDate(detail.date, { weekday: 'short', day: 'numeric', month: 'short' }, locale)} · {detail.checkInTime}–{detail.checkOutTime}
                 </div>
               </div>
             </div>
@@ -1045,9 +1071,9 @@ export default function PlanningPage() {
                 {detail.refusedAt && (
                   <p className="text-[11px] text-gray-400 mt-1">
                     {t('refusedOn', {
-                      date: new Date(detail.refusedAt).toLocaleDateString(locale, {
+                      date: formatDate(detail.refusedAt, {
                         day: 'numeric', month: 'short', year: 'numeric',
-                      }),
+                      }, locale),
                     })}
                   </p>
                 )}

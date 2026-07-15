@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { formatDate } from '@/lib/datetime';
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
@@ -31,7 +32,7 @@ const money = (amount: number, currency: string, locale: string) => {
   try {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: (currency || 'usd').toUpperCase(),
+      currency: (currency || 'eur').toUpperCase(),
       minimumFractionDigits: 2,
     }).format(amount);
   } catch {
@@ -140,14 +141,12 @@ function TransactionModal({
                   Date
                 </span>
                 <span className="text-[12px] font-semibold text-gray-900">
-                  {sched?.date
-                    ? new Date(sched.date).toLocaleDateString(locale, {
-                        weekday: 'short',
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-                    : '—'}
+                  {formatDate(sched?.date, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }, locale)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -201,7 +200,7 @@ function TransactionModal({
               {data.releasedAt && (
                 <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1">
                   <span>Released</span>
-                  <span>{new Date(data.releasedAt).toLocaleDateString(locale)}</span>
+                  <span>{formatDate(data.releasedAt, {}, locale)}</span>
                 </div>
               )}
             </div>
@@ -230,7 +229,7 @@ export default function RevenuePage() {
     limit: 8,
   });
 
-  const currency = data?.currency ?? 'usd';
+  const currency = data?.currency ?? 'eur';
   const graph = data?.graph ?? [];
   const maxBar = useMemo(() => Math.max(1, ...graph.map((g) => g.total)), [graph]);
 
@@ -364,9 +363,7 @@ export default function RevenuePage() {
               const photo = tx.accommodation?.photo
                 ? resolveAssetUrl(tx.accommodation.photo)
                 : FALLBACK_ROOM;
-              const dateLabel = tx.date
-                ? new Date(tx.date).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
-                : '—';
+              const dateLabel = formatDate(tx.date, { day: 'numeric', month: 'short' }, locale);
               return (
                 <button
                   key={tx._id}

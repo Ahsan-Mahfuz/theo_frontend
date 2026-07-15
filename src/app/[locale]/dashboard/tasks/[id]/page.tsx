@@ -21,6 +21,7 @@ import {
   useInvalidateProofMutation,
 } from '@/store/api/scheduleApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatDate, formatDateTime } from '@/lib/datetime';
 import { getApiErrorMessage } from '@/lib/apiError';
 
 const FALLBACK_ROOM =
@@ -67,13 +68,9 @@ export default function TaskDetailPage() {
   const s = data as any;
 
   const dateLabel = (d?: string) =>
-    d
-      ? new Date(d).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-      : '—';
+    formatDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, locale);
   const dateTimeLabel = (d?: string) =>
-    d
-      ? new Date(d).toLocaleString(locale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-      : '—';
+    formatDateTime(d, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }, locale);
 
   const handleComplete = async () => {
     setActionError('');

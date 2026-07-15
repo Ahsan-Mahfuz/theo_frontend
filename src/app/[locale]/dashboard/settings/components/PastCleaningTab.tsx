@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import { formatDate } from '@/lib/datetime';
 import {
   Coins02Icon,
   EuroIcon
@@ -25,7 +26,7 @@ export default function PastCleaningTab() {
   // Amounts are stored in the smallest currency unit (cents) on the backend,
   // so divide by 100 for display.
   const rows = payments.map((p) => ({
-    date: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-',
+    date: p.createdAt ? formatDate(p.createdAt) : '-',
     name: p.accommodation?.name ?? '-',
     location:
       [p.accommodation?.city, p.accommodation?.zipCode].filter(Boolean).join(' ') ||

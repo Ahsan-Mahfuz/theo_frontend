@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Calendar01Icon, ArrowRight01Icon, Time02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatDate as formatDateLocal } from '@/lib/datetime';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 
 const FALLBACK_ROOM =
@@ -18,13 +19,8 @@ const avatarOf = (p: any): string =>
   resolveAssetUrl(p?.profileImage) || `${FALLBACK_AVATAR}${encodeURIComponent(nameOf(p))}`;
 const photoOf = (acc: any): string => resolveAssetUrl(acc?.photos?.[0]) || FALLBACK_ROOM;
 
-const formatDate = (d?: string): string => {
-  if (!d) return '—';
-  const date = new Date(d);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-};
+const formatDate = (d?: string): string =>
+  formatDateLocal(d, { day: 'numeric', month: 'short', year: 'numeric' });
 
 export function RecommendedCard({ item }: { item: any }) {
   const t = useTranslations('Dashboard.home');

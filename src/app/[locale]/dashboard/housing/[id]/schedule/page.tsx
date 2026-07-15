@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { useCreateScheduleMutation } from '@/store/api/scheduleApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatDate as formatDateLocal } from '@/lib/datetime';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useOpenChat } from '@/hooks/useOpenChat';
@@ -53,11 +54,8 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const address = accommodation ? `${accommodation.address}, ${accommodation.city}` : '';
   const cleaningRate = accommodation?.cleaningRate ?? 0;
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  };
+  const formatDate = (dateStr: string) =>
+    formatDateLocal(dateStr, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
 
   const formatTime = (timeStr: string) => {
     if (!timeStr) return '';

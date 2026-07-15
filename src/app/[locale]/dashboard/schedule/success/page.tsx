@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { formatDate } from '@/lib/datetime';
 import { Tick02Icon, Calendar01Icon, Time02Icon, UserIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useScheduleContext } from '../ScheduleContext';
@@ -77,7 +78,7 @@ export default function ScheduleSuccessPage() {
                  <HugeiconsIcon icon={Calendar01Icon} className="w-4 h-4 text-gray-400" />
                  <span className="text-[12px] text-gray-500">{t('date')}</span>
                </div>
-               <span className="text-[12px] font-medium text-gray-900">{data.date ? new Date(data.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }) : '---'}</span>
+               <span className="text-[12px] font-medium text-gray-900">{data.date ? formatDate(data.date, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }, 'en-US') : '---'}</span>
             </div>
             <div className="flex items-center justify-between">
                <div className="flex items-center gap-2">
