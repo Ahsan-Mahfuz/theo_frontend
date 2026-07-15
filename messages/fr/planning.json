@@ -56,6 +56,7 @@
     "booked": "Réservé",
     "occupied": "Occupé",
     "occupiedHint": "Un voyageur séjourne — aucun ménage ne peut être planifié avant le départ.",
+    "occupiedScheduleHint": "Un voyageur séjourne — planifiez tout de même un ménage.",
     "checkout": "Départ",
     "checkoutHint": "Départ du voyageur — jour idéal pour planifier le ménage.",
     "payNow": "Payer",
@@ -63,6 +64,9 @@
     "cleaningDetails": "Détails du ménage",
     "acceptedPayHint": "L'agent a accepté — payez pour confirmer le ménage.",
     "awaitingPayHint": "En attente de l'acceptation de votre demande par l'agent.",
+    "cleanerRefusedHint": "Cet agent a refusé le ménage. Vous pouvez planifier un autre agent pour ce jour.",
+    "refusedOn": "Refusé le {date}",
+    "scheduleAnotherCleaner": "Planifier un autre agent",
     "status": {
       "scheduled": "En attente de l'agent",
       "accepted": "Accepté",

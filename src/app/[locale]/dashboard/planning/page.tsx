@@ -60,6 +60,8 @@ interface MonthData {
     paymentStatus?: string;
     booking?: string | null;
     cleaner?: any;
+    notes?: string;
+    refusedAt?: string;
   }[];
 }
 
@@ -151,6 +153,11 @@ interface ModalState {
   bookingId?: string;
   checkIn?: string;
   checkOut?: string;
+  notes?: string;
+  // pre-select this cleaner on open (used when re-scheduling)
+  cleanerId?: string;
+  // default the cleaner picker away from this cleaner (the one who refused)
+  excludeCleanerId?: string;
 }
 
 function ScheduleModal({
@@ -188,13 +195,29 @@ function ScheduleModal({
       setCheckOut(editing.checkOutTime || '15:00');
       setNotes(editing.notes || '');
     } else {
-      setCleanerId(cleaners[0]?.cleaner?._id ? String(cleaners[0].cleaner._id) : '');
+      // Re-schedule prefill: pick the requested cleaner, else the first cleaner
+      // that isn't the one who refused, else just the first accepted cleaner.
+      const preferred =
+        state.cleanerId ||
+        cleaners.find((cl) => String(cl.cleaner?._id ?? '') !== state.excludeCleanerId)?.cleaner?._id ||
+        cleaners[0]?.cleaner?._id;
+      setCleanerId(preferred ? String(preferred) : '');
       setDate(state.date || '');
       setCheckIn(state.checkIn || '11:00');
       setCheckOut(state.checkOut || '15:00');
-      setNotes('');
+      setNotes(state.notes || '');
     }
-  }, [state.open, editing, state.date, state.checkIn, state.checkOut, cleaners]);
+  }, [
+    state.open,
+    editing,
+    state.date,
+    state.checkIn,
+    state.checkOut,
+    state.notes,
+    state.cleanerId,
+    state.excludeCleanerId,
+    cleaners,
+  ]);
 
   if (!state.open) return null;
 
@@ -424,10 +447,18 @@ export default function PlanningPage() {
         if (e.getFullYear() === year && e.getMonth() === month - 1) checkout.add(e.getDate());
       }
       for (const d of checkout) if (booked.has(d)) checkout.delete(d);
+      // One schedule shown per day. When a day holds both a refused/cancelled
+      // schedule and a live one (host re-scheduled another cleaner), the live one
+      // wins so the calendar reflects the current cleaning.
+      const isDead = (s: MonthData['schedules'][number]) =>
+        s.status === 'refused' || s.status === 'cancelled';
       const byDay = new Map<number, MonthData['schedules'][number]>();
       for (const sc of monthData?.schedules ?? []) {
         const d = new Date(sc.date);
-        if (d.getFullYear() === year && d.getMonth() === month - 1) byDay.set(d.getDate(), sc);
+        if (d.getFullYear() !== year || d.getMonth() !== month - 1) continue;
+        const day = d.getDate();
+        const existing = byDay.get(day);
+        if (!existing || !isDead(sc) || isDead(existing)) byDay.set(day, sc);
       }
       const firstIdx = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Mon=0
       return {
@@ -474,6 +505,23 @@ export default function PlanningPage() {
   const openCreate = (opts: { date?: string; bookingId?: string; checkIn?: string; checkOut?: string } = {}) =>
     setModal({ open: true, editing: null, ...opts });
   const openEdit = (schedule: any) => setModal({ open: true, editing: schedule });
+
+  // A cleaner refused (or the host cancelled) this cleaning: open a fresh create
+  // form pre-filled with the same day/time/notes, defaulting to a different
+  // cleaner. The host can still edit any field before creating.
+  const openReschedule = (s: any) => {
+    setDetail(null);
+    setModal({
+      open: true,
+      editing: null,
+      date: toDateInput(s.date),
+      checkIn: s.checkInTime,
+      checkOut: s.checkOutTime,
+      notes: s.notes || '',
+      bookingId: s.booking ? String(s.booking) : undefined,
+      excludeCleanerId: String(s.cleaner?._id || s.cleaner || ''),
+    });
+  };
 
   // Ask for confirmation via the in-app modal (not the native browser dialog).
   const handleDeleteSchedule = (id: string) => {
@@ -703,9 +751,9 @@ export default function PlanningPage() {
                       const sched = schedByDay.get(d);
                       const booked = bookedDays.has(d);
                       const isCheckout = checkoutDays.has(d);
-                      // A guest is present on booked days → cleaning is not allowed
-                      // there (enforced on the backend too). The checkout day is
-                      // free and is the recommended day to clean.
+                      // Occupied days are still schedulable — the host may want to
+                      // assign a cleaner while the guest is in the unit. We only
+                      // shade the cell so it reads as occupied.
                       const cellTone = booked
                         ? 'bg-[#F4F4F5] border-transparent'
                         : isCheckout
@@ -749,23 +797,23 @@ export default function PlanningPage() {
                                 ) : null;
                               })()}
                             </button>
-                          ) : booked ? (
-                            // Guest present → no scheduling. Show a locked marker.
-                            <span
-                              title={t('occupiedHint')}
-                              className="mt-1 w-7 h-7 rounded-full bg-white/70 border border-gray-200 flex items-center justify-center text-gray-300"
-                            >
-                              <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" />
-                            </span>
                           ) : (
                             <button
                               onClick={() => openCreate({ date: dayInput(d) })}
                               disabled={acceptedCleaners.length === 0}
-                              title={isCheckout ? t('checkoutHint') : t('scheduleCleaning')}
+                              title={
+                                booked
+                                  ? t('occupiedScheduleHint')
+                                  : isCheckout
+                                    ? t('checkoutHint')
+                                    : t('scheduleCleaning')
+                              }
                               className={`mt-1 w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
                                 isCheckout
                                   ? 'bg-[#D48806] border border-[#D48806] text-white hover:bg-[#B4690E]'
-                                  : 'bg-white border border-[#10B981] text-[#10B981] hover:bg-green-50'
+                                  : booked
+                                    ? 'bg-white border border-gray-300 text-gray-400 hover:border-[#10B981] hover:text-[#10B981]'
+                                    : 'bg-white border border-[#10B981] text-[#10B981] hover:bg-green-50'
                               }`}
                             >
                               <HugeiconsIcon icon={Add01Icon} className="w-3.5 h-3.5" />
@@ -991,6 +1039,20 @@ export default function PlanningPage() {
             {needsPayment(detail) && (
               <p className="text-[12px] text-gray-500 mb-4">{t('acceptedPayHint')}</p>
             )}
+            {detail.status === 'refused' && (
+              <div className="mb-4">
+                <p className="text-[12px] text-gray-500">{t('cleanerRefusedHint')}</p>
+                {detail.refusedAt && (
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    {t('refusedOn', {
+                      date: new Date(detail.refusedAt).toLocaleDateString(locale, {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                      }),
+                    })}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2">
               {needsPayment(detail) && (
@@ -1003,6 +1065,17 @@ export default function PlanningPage() {
                 <button onClick={() => router.push(`/dashboard/tasks/${detail._id}`)} className="flex-1 h-11 rounded-xl bg-[#7C3AED] text-white text-[13px] font-bold hover:bg-[#6D28D9] flex items-center justify-center gap-2">
                   <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-4 h-4" />
                   {t('reviewProof')}
+                </button>
+              )}
+              {(detail.status === 'refused' || detail.status === 'cancelled') && (
+                <button
+                  onClick={() => openReschedule(detail)}
+                  disabled={acceptedCleaners.length === 0}
+                  title={acceptedCleaners.length === 0 ? t('noAcceptedCleaner') : undefined}
+                  className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />
+                  {t('scheduleAnotherCleaner')}
                 </button>
               )}
               {detail.status === 'scheduled' && (
