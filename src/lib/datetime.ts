@@ -43,6 +43,21 @@ export const formatDateTime = (
   return d ? d.toLocaleString(locale, options) : "—";
 };
 
+// Local "YYYY-MM-DD" for an <input type="date"> value/min. Built from the local
+// calendar fields rather than toISOString(), which would shift a midnight-local
+// date to the previous day west of UTC.
+export const toDateInput = (input?: string | number | Date | null): string => {
+  const d = parseDate(input);
+  if (!d) return "";
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${month}-${day}`;
+};
+
+// Today, viewer-local — the `min` for any date picker that must not accept a
+// past day (a cleaning can only be scheduled from today onwards).
+export const todayInput = (): string => toDateInput(new Date());
+
 // Time only, viewer-local.
 export const formatTime = (
   input?: string | number | Date | null,

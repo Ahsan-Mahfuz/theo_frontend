@@ -16,7 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { useCreateScheduleMutation } from '@/store/api/scheduleApi';
 import { resolveAssetUrl } from '@/lib/config';
-import { formatDate as formatDateLocal } from '@/lib/datetime';
+import { formatDate as formatDateLocal, todayInput } from '@/lib/datetime';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useOpenChat } from '@/hooks/useOpenChat';
@@ -36,7 +36,9 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const [createSchedule, { isLoading: isCreating }] = useCreateScheduleMutation();
   const { openChat, isOpening } = useOpenChat();
 
-  const [date, setDate] = useState('2026-05-22');
+  // Default to today — a cleaning can never be scheduled in the past.
+  const minDate = todayInput();
+  const [date, setDate] = useState(minDate);
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('12:30');
   const [error, setError] = useState('');
@@ -134,6 +136,7 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                           type="date"
                           className="bg-transparent outline-none w-full pl-6 pr-2 cursor-pointer text-gray-700 font-medium text-[12px] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                           value={date}
+                          min={minDate}
                           onChange={(e) => setDate(e.target.value)}
                         />
                       </div>

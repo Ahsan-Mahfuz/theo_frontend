@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { formatDate } from '@/lib/datetime';
+import { formatDate, todayInput } from '@/lib/datetime';
 import {
   Location01Icon,
   ArrowLeft01Icon,
@@ -99,6 +99,13 @@ const ringFor = (status: string) => {
 // the payment is held (or released) the host has paid.
 const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
 const needsPayment = (s: any) => s?.status === 'accepted' && !isPaid(s);
+
+// Deleting is allowed right up until the host pays — including a cleaning the
+// cleaner already accepted, which the host may have booked by mistake. Paying
+// locks it (mirrors the backend rule). Editing stays stricter: only while the
+// cleaner hasn't responded yet.
+const DELETABLE_STATUSES = ['scheduled', 'accepted', 'refused', 'cancelled'];
+const canDelete = (s: any) => !isPaid(s) && DELETABLE_STATUSES.includes(s?.status);
 
 // Small corner badge on a calendar avatar: clock (awaiting), € (pay now),
 // check (paid / accepted-and-paid).
@@ -313,7 +320,7 @@ function ScheduleModal({
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium text-gray-700">{t('dateLabel')}</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+              <input type="date" value={date} min={todayInput()} onChange={(e) => setDate(e.target.value)} className={inputClass} />
             </div>
 
             <div className="flex gap-3">
@@ -574,6 +581,10 @@ export default function PlanningPage() {
   const dayInput = (d: number) =>
     `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
+  // Same YYYY-MM-DD shape as dayInput, so calendar cells can be compared to it
+  // directly to find the days that have already passed.
+  const today = todayInput();
+
   // Connecting a calendar is always optional: every accommodation shows the
   // Calendar/List by default, and the connect form only opens on demand (via the
   // "manage calendars" button). We never force it just because nothing is connected.
@@ -777,6 +788,11 @@ export default function PlanningPage() {
                       const sched = schedByDay.get(d);
                       const booked = bookedDays.has(d);
                       const isCheckout = checkoutDays.has(d);
+                      // A day that has already gone by can't be scheduled. Both
+                      // sides are zero-padded YYYY-MM-DD, so a string compare is
+                      // the same as a date compare — and stays in the viewer's
+                      // local calendar, which is what the host sees.
+                      const isPastDay = dayInput(d) < today;
                       // Occupied days are still schedulable — the host may want to
                       // assign a cleaner while the guest is in the unit. We only
                       // shade the cell so it reads as occupied.
@@ -826,13 +842,15 @@ export default function PlanningPage() {
                           ) : (
                             <button
                               onClick={() => openCreate({ date: dayInput(d) })}
-                              disabled={acceptedCleaners.length === 0}
+                              disabled={acceptedCleaners.length === 0 || isPastDay}
                               title={
-                                booked
-                                  ? t('occupiedScheduleHint')
-                                  : isCheckout
-                                    ? t('checkoutHint')
-                                    : t('scheduleCleaning')
+                                isPastDay
+                                  ? t('pastDateHint')
+                                  : booked
+                                    ? t('occupiedScheduleHint')
+                                    : isCheckout
+                                      ? t('checkoutHint')
+                                      : t('scheduleCleaning')
                               }
                               className={`mt-1 w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
                                 isCheckout
@@ -991,14 +1009,14 @@ export default function PlanningPage() {
                               </button>
                             )}
                             {editable && (
-                              <>
-                                <button onClick={() => openEdit(s)} title={c('edit')} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700">
-                                  <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => handleDeleteSchedule(s._id)} title={c('delete')} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500">
-                                  <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
-                                </button>
-                              </>
+                              <button onClick={() => openEdit(s)} title={c('edit')} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700">
+                                <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
+                              </button>
+                            )}
+                            {canDelete(s) && (
+                              <button onClick={() => handleDeleteSchedule(s._id)} title={c('delete')} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                              </button>
                             )}
                           </div>
                         </div>
@@ -1105,15 +1123,15 @@ export default function PlanningPage() {
                 </button>
               )}
               {detail.status === 'scheduled' && (
-                <>
-                  <button onClick={() => { const s = detail; setDetail(null); openEdit(s); }} className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
-                    <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
-                    {c('edit')}
-                  </button>
-                  <button onClick={() => { const id = detail._id; setDetail(null); handleDeleteSchedule(id); }} className="h-11 px-4 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center">
-                    <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
-                  </button>
-                </>
+                <button onClick={() => { const s = detail; setDetail(null); openEdit(s); }} className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+                  <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
+                  {c('edit')}
+                </button>
+              )}
+              {canDelete(detail) && (
+                <button onClick={() => { const id = detail._id; setDetail(null); handleDeleteSchedule(id); }} title={c('delete')} className="h-11 px-4 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center">
+                  <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                </button>
               )}
             </div>
           </div>

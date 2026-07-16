@@ -60,6 +60,7 @@
     "occupiedScheduleHint": "Un voyageur séjourne — planifiez tout de même un ménage.",
     "checkout": "Départ",
     "checkoutHint": "Départ du voyageur — jour idéal pour planifier le ménage.",
+    "pastDateHint": "Ce jour est déjà passé — un ménage ne peut être planifié qu'à partir d'aujourd'hui.",
     "payNow": "Payer",
     "paid": "Payé",
     "cleaningDetails": "Détails du ménage",

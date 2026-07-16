@@ -60,6 +60,7 @@
     "occupiedScheduleHint": "A guest is staying — schedule a cleaning anyway.",
     "checkout": "Checkout",
     "checkoutHint": "Guest checks out — best day to schedule the cleaning.",
+    "pastDateHint": "This day has already passed — a cleaning can only be scheduled from today onwards.",
     "payNow": "Pay now",
     "paid": "Paid",
     "cleaningDetails": "Cleaning details",

@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { formatDate } from '@/lib/datetime';
+import { formatDate, todayInput } from '@/lib/datetime';
 import { Location01Icon, Calendar01Icon, Time02Icon, UserIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
@@ -191,6 +191,7 @@ export default function ScheduleDetailsPage() {
                  <input
                    type="date"
                    value={data.date}
+                   min={todayInput()}
                    onChange={(e) => updateData({ date: e.target.value })}
                    className="text-[13px] font-semibold text-gray-900 outline-none bg-transparent cursor-pointer"
                  />
