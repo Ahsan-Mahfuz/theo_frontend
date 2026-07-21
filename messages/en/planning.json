@@ -65,6 +65,7 @@
     "paid": "Paid",
     "cleaningDetails": "Cleaning details",
     "acceptedPayHint": "The cleaner accepted — pay to confirm the cleaning.",
+    "completedPayHint": "The job is done but payment is still pending. You can pay now.",
     "awaitingPayHint": "Waiting for the cleaner to accept your request.",
     "cleanerRefusedHint": "This cleaner declined the cleaning. You can schedule another cleaner for this day.",
     "refusedOn": "Refused on {date}",

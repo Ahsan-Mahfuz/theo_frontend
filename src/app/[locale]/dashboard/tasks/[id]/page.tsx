@@ -11,6 +11,7 @@ import {
   Cancel01Icon,
   Alert02Icon,
   CheckmarkCircle01Icon,
+  Coins01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
@@ -47,6 +48,8 @@ const STATUS_CLS: Record<string, string> = {
 };
 
 const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
+const PAYABLE_STATUSES = ['accepted', 'in_progress', 'proof_submitted', 'completed'];
+const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s);
 
 export default function TaskDetailPage() {
   const params = useParams();
@@ -64,6 +67,9 @@ export default function TaskDetailPage() {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
+
+  const goPay = (scheduleId: string, accId: string) =>
+    router.push(`/dashboard/housing/${accId}/payment?scheduleId=${scheduleId}`);
 
   const s = data as any;
 
@@ -281,6 +287,20 @@ export default function TaskDetailPage() {
                 {completing ? t('validating') : t('validateCleaning')}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Pay Now — visible after job is done but host hasn't paid yet */}
+        {needsPayment(s) && (
+          <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
+            <p className="text-[12px] text-gray-500">{t('payNowHint')}</p>
+            <button
+              onClick={() => goPay(id, acc?._id || s.accommodation?._id || '')}
+              className="w-full h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2"
+            >
+              <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+              {t('payNow')}
+            </button>
           </div>
         )}
 

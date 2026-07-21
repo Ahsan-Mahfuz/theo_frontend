@@ -53,6 +53,8 @@
     "notFound": "This cleaning could not be found.",
     "backToPlanning": "Back to planning",
     "paidBadge": "Paid",
+    "payNow": "Pay now",
+    "payNowHint": "The job is complete but payment is still pending. Pay now to release the funds to the housekeeper.",
     "reviewProof": "Review proof",
     "status": {
       "scheduled": "Awaiting cleaner",

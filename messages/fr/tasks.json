@@ -53,6 +53,8 @@
     "notFound": "Ce ménage est introuvable.",
     "backToPlanning": "Retour au planning",
     "paidBadge": "Payé",
+    "payNow": "Payer maintenant",
+    "payNowHint": "Le travail est terminé mais le paiement est en attente. Payez maintenant pour libérer les fonds à l'agent.",
     "reviewProof": "Voir la preuve",
     "status": {
       "scheduled": "En attente",

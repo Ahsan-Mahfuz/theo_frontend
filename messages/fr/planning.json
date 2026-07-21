@@ -65,6 +65,7 @@
     "paid": "Payé",
     "cleaningDetails": "Détails du ménage",
     "acceptedPayHint": "L'agent a accepté — payez pour confirmer le ménage.",
+    "completedPayHint": "Le travail est terminé mais le paiement est en attente. Vous pouvez payer maintenant.",
     "awaitingPayHint": "En attente de l'acceptation de votre demande par l'agent.",
     "cleanerRefusedHint": "Cet agent a refusé le ménage. Vous pouvez planifier un autre agent pour ce jour.",
     "refusedOn": "Refusé le {date}",

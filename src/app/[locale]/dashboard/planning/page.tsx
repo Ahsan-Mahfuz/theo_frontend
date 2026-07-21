@@ -99,7 +99,11 @@ const ringFor = (status: string) => {
 // Payment state helpers. The cleaner's acceptance is the gate to paying; once
 // the payment is held (or released) the host has paid.
 const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
-const needsPayment = (s: any) => s?.status === 'accepted' && !isPaid(s);
+// Host can pay at any point after the cleaner accepts — including after the job
+// is marked completed (proof_submitted → completed) — as long as they haven't
+// actually paid yet.
+const PAYABLE_STATUSES = ['accepted', 'in_progress', 'proof_submitted', 'completed'];
+const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s);
 
 // Deleting is allowed right up until the host pays — including a cleaning the
 // cleaner already accepted, which the host may have booked by mistake. Paying
@@ -109,11 +113,11 @@ const DELETABLE_STATUSES = ['scheduled', 'accepted', 'refused', 'cancelled'];
 const canDelete = (s: any) => !isPaid(s) && DELETABLE_STATUSES.includes(s?.status);
 
 // Small corner badge on a calendar avatar: clock (awaiting), € (pay now),
-// check (paid / accepted-and-paid).
+// check (paid / completed-and-paid).
 const badgeFor = (s: any): { icon: any; cls: string } | null => {
   if (s.status === 'scheduled') return { icon: Clock01Icon, cls: 'bg-[#D48806]' };
   if (needsPayment(s)) return { icon: Coins01Icon, cls: 'bg-[#0084FF]' };
-  if (isPaid(s) || s.status === 'completed') return { icon: CheckmarkCircle01Icon, cls: 'bg-[#48C79D]' };
+  if (isPaid(s)) return { icon: CheckmarkCircle01Icon, cls: 'bg-[#48C79D]' };
   return null;
 };
 
@@ -132,9 +136,9 @@ const LIST_FILTERS: { key: ListFilter; labelKey: string }[] = [
 const matchesListFilter = (s: any, f: ListFilter): boolean => {
   switch (f) {
     case 'awaiting': return s.status === 'scheduled';
-    // "Accepted" = cleaner accepted but the host hasn't paid yet. Paid cleanings
-    // (in_progress/completed) live under the Paid tab, not here.
+    // "Accepted" = cleaner accepted but the host hasn't paid yet.
     case 'accepted': return s.status === 'accepted' && !isPaid(s);
+    // "Pay now" covers any status where payment is still due (including completed).
     case 'pay_now': return needsPayment(s);
     case 'paid': return isPaid(s);
     default: return true;
@@ -1118,8 +1122,11 @@ export default function PlanningPage() {
             {detail.status === 'scheduled' && (
               <p className="text-[12px] text-gray-500 mb-4">{t('awaitingPayHint')}</p>
             )}
-            {needsPayment(detail) && (
+            {needsPayment(detail) && detail.status !== 'completed' && (
               <p className="text-[12px] text-gray-500 mb-4">{t('acceptedPayHint')}</p>
+            )}
+            {needsPayment(detail) && detail.status === 'completed' && (
+              <p className="text-[12px] text-gray-500 mb-4">{t('completedPayHint')}</p>
             )}
             {detail.status === 'refused' && (
               <div className="mb-4">
