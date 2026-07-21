@@ -15,6 +15,7 @@ import {
 import { resolveAssetUrl } from '@/lib/config';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
+import { TimePickerDropdown } from '@/components/ui/time-picker';
 
 const avatarFor = (name: string) => `https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=${encodeURIComponent(name || 'H')}`;
 
@@ -341,11 +342,21 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium text-gray-700">Check-in Time</label>
-                <input type="text" value={checkInTime} onChange={(e) => setCheckInTime(e.target.value)} placeholder="e.g. 10:00 AM" className={inputClass} />
+                <div className="w-full">
+                  <TimePickerDropdown 
+                    value={checkInTime} 
+                    onChange={setCheckInTime} 
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium text-gray-700">Check-out Time</label>
-                <input type="text" value={checkOutTime} onChange={(e) => setCheckOutTime(e.target.value)} placeholder="e.g. 04:00 PM" className={inputClass} />
+                <div className="w-full">
+                  <TimePickerDropdown 
+                    value={checkOutTime} 
+                    onChange={setCheckOutTime} 
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium text-gray-700">{t('frequencyLabel')}</label>

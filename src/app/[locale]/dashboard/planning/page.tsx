@@ -23,6 +23,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
+import { TimePickerDropdown } from '@/components/ui/time-picker';
 import { useGetPlanningQuery } from '@/store/api/accommodationApi';
 import {
   useGetConnectionsQuery,
@@ -174,11 +175,13 @@ function ScheduleModal({
   onClose,
   accommodationId,
   cleaners,
+  accommodation,
 }: {
   state: ModalState;
   onClose: () => void;
   accommodationId: string;
   cleaners: AssignedCleaner[];
+  accommodation?: Accommodation;
 }) {
   const t = useTranslations('Planning');
   const c = useTranslations('Common');
@@ -187,8 +190,8 @@ function ScheduleModal({
 
   const [cleanerId, setCleanerId] = useState('');
   const [date, setDate] = useState('');
-  const [checkIn, setCheckIn] = useState('11:00');
-  const [checkOut, setCheckOut] = useState('15:00');
+  const [checkIn, setCheckIn] = useState('11:00 AM');
+  const [checkOut, setCheckOut] = useState('03:00 PM');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
 
@@ -197,11 +200,26 @@ function ScheduleModal({
   useEffect(() => {
     if (!state.open) return;
     setError('');
+
+    const formatTo12h = (timeStr?: string, defaultVal = '11:00 AM') => {
+      if (!timeStr) return defaultVal;
+      if (/AM|PM|am|pm/i.test(timeStr)) return timeStr.toUpperCase();
+      const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+      if (match) {
+        let hour = parseInt(match[1]);
+        const min = match[2];
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        return `${String(hour).padStart(2, '0')}:${min} ${ampm}`;
+      }
+      return timeStr;
+    };
+
     if (editing) {
       setCleanerId(String(editing.cleaner?._id || editing.cleaner || ''));
       setDate(toDateInput(editing.date));
-      setCheckIn(editing.checkInTime || '11:00');
-      setCheckOut(editing.checkOutTime || '15:00');
+      setCheckIn(formatTo12h(editing.checkInTime, '11:00 AM'));
+      setCheckOut(formatTo12h(editing.checkOutTime, '03:00 PM'));
       setNotes(editing.notes || '');
     } else {
       // Re-schedule prefill: pick the requested cleaner, else the first cleaner
@@ -212,8 +230,8 @@ function ScheduleModal({
         cleaners[0]?.cleaner?._id;
       setCleanerId(preferred ? String(preferred) : '');
       setDate(state.date || '');
-      setCheckIn(state.checkIn || '11:00');
-      setCheckOut(state.checkOut || '15:00');
+      setCheckIn(state.checkIn || formatTo12h(accommodation?.checkInTime, '11:00 AM'));
+      setCheckOut(state.checkOut || formatTo12h(accommodation?.checkOutTime, '03:00 PM'));
       setNotes(state.notes || '');
     }
   }, [
@@ -226,6 +244,7 @@ function ScheduleModal({
     state.cleanerId,
     state.excludeCleanerId,
     cleaners,
+    accommodation,
   ]);
 
   if (!state.open) return null;
@@ -236,14 +255,28 @@ function ScheduleModal({
       setError(t('createError'));
       return;
     }
+
+    const to24h = (time12: string) => {
+      const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
+      if (match) {
+        let hour = parseInt(match[1]);
+        const min = match[2];
+        const ampm = match[3]?.toUpperCase();
+        if (ampm === 'PM' && hour < 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
+        return `${String(hour).padStart(2, '0')}:${min}`;
+      }
+      return time12;
+    };
+
     try {
       if (editing) {
         await updateSchedule({
           id: editing._id,
           cleanerId,
           date,
-          checkInTime: checkIn,
-          checkOutTime: checkOut,
+          checkInTime: to24h(checkIn),
+          checkOutTime: to24h(checkOut),
           notes,
         }).unwrap();
       } else {
@@ -251,8 +284,8 @@ function ScheduleModal({
           accommodationId,
           cleanerId,
           date,
-          checkInTime: checkIn,
-          checkOutTime: checkOut,
+          checkInTime: to24h(checkIn),
+          checkOutTime: to24h(checkOut),
           notes,
           bookingId: state.bookingId,
         }).unwrap();
@@ -326,11 +359,15 @@ function ScheduleModal({
             <div className="flex gap-3">
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-[12px] font-medium text-gray-700">{t('checkIn')}</label>
-                <input type="time" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className={inputClass} />
+                <div className="w-full">
+                  <TimePickerDropdown value={checkIn} onChange={setCheckIn} />
+                </div>
               </div>
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-[12px] font-medium text-gray-700">{t('checkOut')}</label>
-                <input type="time" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className={inputClass} />
+                <div className="w-full">
+                  <TimePickerDropdown value={checkOut} onChange={setCheckOut} />
+                </div>
               </div>
             </div>
 
@@ -1039,6 +1076,7 @@ export default function PlanningPage() {
         onClose={() => setModal({ open: false })}
         accommodationId={selectedAccId}
         cleaners={acceptedCleaners}
+        accommodation={selectedAcc}
       />
 
       {/* Calendar cell detail popover */}

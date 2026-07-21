@@ -51,6 +51,8 @@ export interface Accommodation {
   accessCode?: string;
   instructions?: string;
   frequency?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
   status: 'scheduled' | 'not_scheduled';
   host: string | { _id: string; firstName?: string; lastName?: string };
   isDeleted: boolean;

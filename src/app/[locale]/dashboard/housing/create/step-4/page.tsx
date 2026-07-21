@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { TimePickerDropdown } from '@/components/ui/time-picker';
 import { StepIndicator } from '../components/StepIndicator';
 import { useCreateHousing } from '../CreateHousingContext';
 
@@ -64,24 +65,22 @@ export default function Step4Page() {
 
         <div className="flex flex-col gap-2">
           <label className="text-[13px] font-bold text-gray-900">Check-in time</label>
-          <input
-            type="text"
-            value={data.checkInTime}
-            onChange={(e) => updateData({ checkInTime: e.target.value })}
-            placeholder="e.g. 10:00 AM"
-            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[13px] text-gray-900 focus:outline-none focus:border-[#0084FF] focus:ring-1 focus:ring-[#0084FF] transition-all shadow-sm"
-          />
+          <div className="w-full">
+            <TimePickerDropdown 
+              value={data.checkInTime || '10:00 AM'} 
+              onChange={(val) => updateData({ checkInTime: val })} 
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
           <label className="text-[13px] font-bold text-gray-900">Check-out time</label>
-          <input
-            type="text"
-            value={data.checkOutTime}
-            onChange={(e) => updateData({ checkOutTime: e.target.value })}
-            placeholder="e.g. 04:00 PM"
-            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[13px] text-gray-900 focus:outline-none focus:border-[#0084FF] focus:ring-1 focus:ring-[#0084FF] transition-all shadow-sm"
-          />
+          <div className="w-full">
+            <TimePickerDropdown 
+              value={data.checkOutTime || '04:00 PM'} 
+              onChange={(val) => updateData({ checkOutTime: val })} 
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mt-4">

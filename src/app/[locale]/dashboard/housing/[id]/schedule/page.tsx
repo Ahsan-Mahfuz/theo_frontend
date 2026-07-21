@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -21,6 +21,8 @@ import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useOpenChat } from '@/hooks/useOpenChat';
 
+import { TimePickerDropdown } from '@/components/ui/time-picker';
+
 const avatarFor = (name: string) => `https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=${encodeURIComponent(name || 'Cleaner')}`;
 const cleanerName = (c: any) => c?.name || `${c?.firstName ?? ''} ${c?.lastName ?? ''}`.trim() || 'Cleaner';
 const cleanerAvatar = (c: any) => resolveAssetUrl(c?.profileImage) || avatarFor(cleanerName(c));
@@ -39,9 +41,42 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   // Default to today — a cleaning can never be scheduled in the past.
   const minDate = todayInput();
   const [date, setDate] = useState(minDate);
-  const [startTime, setStartTime] = useState('10:00');
-  const [endTime, setEndTime] = useState('12:30');
+  // Time slots matching the accommodation's defaults
+  const [startTime, setStartTime] = useState('10:00 AM');
+  const [endTime, setEndTime] = useState('04:00 PM');
   const [error, setError] = useState('');
+
+  // Pre-fill from accommodation checkInTime and checkOutTime when loaded
+  useEffect(() => {
+    if (!accommodation) return;
+
+    // Helper to ensure 'HH:MM AM' format
+    const formatTo12h = (timeStr?: string, defaultVal = '12:00 PM') => {
+      if (!timeStr) return defaultVal;
+      // If it already contains AM/PM, it's fine
+      if (/AM|PM|am|pm/i.test(timeStr)) {
+         return timeStr.toUpperCase();
+      }
+      // If it's 24h, convert it
+      const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+      if (match) {
+        let hour = parseInt(match[1]);
+        const min = match[2];
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12;
+        if (hour === 0) hour = 12;
+        return `${String(hour).padStart(2, '0')}:${min} ${ampm}`;
+      }
+      return timeStr;
+    };
+
+    if (accommodation.checkInTime) {
+      setStartTime(formatTo12h(accommodation.checkInTime, '10:00 AM'));
+    }
+    if (accommodation.checkOutTime) {
+      setEndTime(formatTo12h(accommodation.checkOutTime, '04:00 PM'));
+    }
+  }, [accommodation]);
 
   const cleaners = (accommodation?.assignedCleaners ?? []) as any[];
   const primaryEntry = cleaners.find((c) => c.role === 'primary') || null;
@@ -59,13 +94,9 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const formatDate = (dateStr: string) =>
     formatDateLocal(dateStr, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
 
-  const formatTime = (timeStr: string) => {
-    if (!timeStr) return '';
-    const [h, m] = timeStr.split(':');
-    let hour = parseInt(h);
-    const ampm = hour >= 12 ? 'pm' : 'am';
-    hour = hour % 12 || 12;
-    return `${hour}:${m}${ampm}`;
+  // timeStr is now like "10:00 AM"
+  const formatTimeDisplay = (timeStr: string) => {
+    return timeStr; // Already in 12h format
   };
 
   const handleNext = async () => {
@@ -74,13 +105,28 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
       setError(t('assignConfirmError'));
       return;
     }
+    
+    // Parse "10:00 AM" to "10:00" (24h) for the backend
+    const to24h = (time12: string) => {
+      const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
+      if (match) {
+        let hour = parseInt(match[1]);
+        const min = match[2];
+        const ampm = match[3]?.toUpperCase();
+        if (ampm === 'PM' && hour < 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
+        return `${String(hour).padStart(2, '0')}:${min}`;
+      }
+      return time12;
+    };
+
     try {
       const created = await createSchedule({
         accommodationId: id,
         cleanerId,
         date,
-        checkInTime: startTime,
-        checkOutTime: endTime,
+        checkInTime: to24h(startTime),
+        checkOutTime: to24h(endTime),
       }).unwrap();
       router.push(`/dashboard/housing/${id}/payment?scheduleId=${created._id}`);
     } catch (err) {
@@ -148,15 +194,19 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-1">
                       <HugeiconsIcon icon={Clock01Icon} className="w-4 h-4 text-gray-500" />
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 w-full">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('cleaningTime')}</span>
-                      <div className="flex items-center gap-3 mt-1">
-                        <div className="flex items-center h-10 px-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-colors">
-                          <input type="time" className="bg-transparent outline-none w-full cursor-pointer text-[12px] text-gray-700 font-medium" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                      <div className="flex flex-wrap gap-4 mt-2">
+                        {/* Check-in custom dropdown picker */}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[11px] text-gray-500 font-medium">Check-in</span>
+                          <TimePickerDropdown value={startTime} onChange={setStartTime} />
                         </div>
-                        <span className="text-gray-400 text-[12px]">-</span>
-                        <div className="flex items-center h-10 px-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-colors">
-                          <input type="time" className="bg-transparent outline-none w-full cursor-pointer text-[12px] text-gray-700 font-medium" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+
+                        {/* Check-out custom dropdown picker */}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[11px] text-gray-500 font-medium">Check-out</span>
+                          <TimePickerDropdown value={endTime} onChange={setEndTime} />
                         </div>
                       </div>
                       <span className="text-[10px] text-gray-400 mt-2">{t('timesAutoRetrieved')}</span>
@@ -270,9 +320,9 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                       <span className="text-[12px] text-gray-500">{t('checkOutIn')}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[12px] font-medium text-gray-900">{formatTime(startTime)}</span>
+                      <span className="text-[12px] font-medium text-gray-900">{formatTimeDisplay(startTime)}</span>
                       <HugeiconsIcon icon={ArrowRight01Icon} className="w-3 h-3 text-gray-400" />
-                      <span className="text-[12px] font-medium text-gray-900">{formatTime(endTime)}</span>
+                      <span className="text-[12px] font-medium text-gray-900">{formatTimeDisplay(endTime)}</span>
                     </div>
                   </div>
 
