@@ -10,7 +10,7 @@ import { AppImage } from '@/components/ui/app-image';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
 import { RecommendedCard } from '@/components/dashboard/recommended-card';
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 10;
 
 export default function RecommendedSchedulePage() {
   const t = useTranslations('Dashboard.home');

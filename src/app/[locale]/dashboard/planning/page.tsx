@@ -520,7 +520,11 @@ export default function PlanningPage() {
         // start of a back-to-back booking, in which case it stays occupied).
         if (e.getFullYear() === year && e.getMonth() === month - 1) checkout.add(e.getDate());
       }
-      for (const d of checkout) if (booked.has(d)) checkout.delete(d);
+      // When checkout and checkin fall on the same day (back-to-back, e.g.
+      // 12:00 PM checkout → 12:00 PM check-in), both events happened: keep the
+      // checkout badge visible and remove that day from "booked" so the calendar
+      // correctly shows "Checkout" instead of "Occupied".
+      for (const d of checkout) booked.delete(d);
       // One schedule shown per day. When a day holds both a refused/cancelled
       // schedule and a live one (host re-scheduled another cleaner), the live one
       // wins so the calendar reflects the current cleaning.
