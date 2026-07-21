@@ -20,6 +20,8 @@ type SignupData = {
   endTime: string;
   averageDuration: string;
   proposedRate: string;
+  checkInTime: string;
+  checkOutTime: string;
 };
 
 type SignupContextType = {
@@ -57,6 +59,8 @@ const defaultData: SignupData = {
   endTime: '4:00 PM',
   averageDuration: '2h30',
   proposedRate: '80',
+  checkInTime: '10:00 AM',
+  checkOutTime: '04:00 PM',
 };
 
 const SignupContext = createContext<SignupContextType | undefined>(undefined);

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Location01Icon,
@@ -12,10 +12,11 @@ import {
   Coins01Icon,
   Home01Icon,
   UserAdd01Icon,
+  ArrowDown01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
-import { useGetHousingQuery } from '@/store/api/accommodationApi';
+import { useGetAccommodationsQuery } from '@/store/api/accommodationApi';
 import type { Accommodation, AssignedCleaner } from '@/store/types';
 import { resolveAssetUrl } from '@/lib/config';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
@@ -223,7 +224,9 @@ function HousingCard({ acc }: { acc: Accommodation }) {
 export default function HousingPage() {
   const t = useTranslations('Housing.list');
   const c = useTranslations('Common');
-  const { data, isLoading, isError, refetch } = useGetHousingQuery({ page: 1, limit: 10 });
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, refetch } = useGetAccommodationsQuery({ page, limit: 10 });
+  const totalPages = data?.meta?.total ? Math.ceil(data.meta.total / 10) : undefined;
   const items = data?.data ?? [];
 
   return (
@@ -268,11 +271,83 @@ export default function HousingPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {items.map((acc) => (
-            <HousingCard acc={acc} key={acc._id} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {items.map((acc) => (
+              <HousingCard acc={acc} key={acc._id} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages && totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-10">
+              {/* Previous */}
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+                className="h-9 px-3 rounded-lg border border-gray-200 bg-white text-[13px] font-medium text-gray-600 transition-all hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200"
+              >
+                ← Previous
+              </button>
+
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                // Show first, last, current, and neighbors; ellipsis for the rest
+                const show =
+                  p === 1 ||
+                  p === totalPages ||
+                  Math.abs(p - page) <= 1;
+                const showEllipsisBefore =
+                  p === page - 2 && page - 2 > 1;
+                const showEllipsisAfter =
+                  p === page + 2 && page + 2 < totalPages;
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span
+                      key={`ellipsis-${p}`}
+                      className="w-9 h-9 flex items-center justify-center text-[13px] text-gray-400"
+                    >
+                      …
+                    </span>
+                  );
+                }
+
+                if (!show) return null;
+
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-9 h-9 rounded-lg text-[13px] font-semibold transition-all ${
+                      p === page
+                        ? 'bg-[#0084FF] text-white shadow-md shadow-blue-200'
+                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+
+              {/* Next */}
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+                className="h-9 px-3 rounded-lg border border-gray-200 bg-white text-[13px] font-medium text-gray-600 transition-all hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
+          {/* Showing info */}
+          {data?.meta && (
+            <p className="text-center text-[12px] text-gray-400 mt-3">
+              Showing {(page - 1) * 10 + 1}–{Math.min(page * 10, data.meta.total)} of {data.meta.total} accommodations
+            </p>
+          )}
+        </>
       )}
     </main>
   );

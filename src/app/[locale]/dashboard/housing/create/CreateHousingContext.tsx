@@ -20,6 +20,8 @@ export type HousingData = {
   keys: string;
   accessCode: string;
   instructions: string;
+  checkInTime: string;
+  checkOutTime: string;
 };
 
 interface CreateHousingContextType {
@@ -45,6 +47,8 @@ const defaultData: HousingData = {
   keys: '',
   accessCode: '',
   instructions: '',
+  checkInTime: '10:00 AM',
+  checkOutTime: '04:00 PM',
 };
 
 const CreateHousingContext = createContext<CreateHousingContextType | undefined>(undefined);

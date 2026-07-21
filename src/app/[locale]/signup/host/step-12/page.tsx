@@ -39,7 +39,7 @@ export default function Step12Page() {
         {renderSummaryRow(t('step12.type'), data.propertyType)}
         {renderSummaryRow(t('step12.bedrooms'), t('step12.bedroomsValue', { count: data.bedrooms }))}
         {renderSummaryRow(t('step12.bathrooms'), t('step12.bathroomsValue', { count: data.bathrooms1 }))}
-        {renderSummaryRow(t('step12.timeSlot'), t('step12.timeSlotValue', { start: data.startTime, end: data.endTime }))}
+        {renderSummaryRow(t('step12.timeSlot'), t('step12.timeSlotValue', { start: data.checkInTime, end: data.checkOutTime }))}
         {renderSummaryRow(t('step12.averageDuration'), data.averageDuration)}
         {renderSummaryRow(t('step12.proposedRate'), t('step12.rateValue', { rate: data.proposedRate }))}
       </div>

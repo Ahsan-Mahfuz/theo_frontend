@@ -65,6 +65,32 @@ export default function Step9Page() {
             />
           </div>
         </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[12px] text-gray-800 font-medium">Check-in time</label>
+          <div className="flex items-center w-full bg-white border border-gray-200 h-11 rounded-lg px-3 focus-within:border-[#0084FF] transition-colors">
+            <input 
+              type="text" 
+              placeholder="e.g. 10:00 AM"
+              className="bg-transparent text-gray-800 placeholder-gray-400 outline-none text-[13px] w-full h-full"
+              value={data.checkInTime}
+              onChange={(e) => updateData({ checkInTime: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[12px] text-gray-800 font-medium">Check-out time</label>
+          <div className="flex items-center w-full bg-white border border-gray-200 h-11 rounded-lg px-3 focus-within:border-[#0084FF] transition-colors">
+            <input 
+              type="text" 
+              placeholder="e.g. 04:00 PM"
+              className="bg-transparent text-gray-800 placeholder-gray-400 outline-none text-[13px] w-full h-full"
+              value={data.checkOutTime}
+              onChange={(e) => updateData({ checkOutTime: e.target.value })}
+            />
+          </div>
+        </div>
       </div>
 
       <button 

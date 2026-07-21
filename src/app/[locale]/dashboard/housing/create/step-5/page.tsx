@@ -62,6 +62,8 @@ export default function Step5Page() {
     if (data.keys) fd.append('keys', data.keys);
     if (data.accessCode) fd.append('accessCode', data.accessCode);
     if (data.instructions) fd.append('instructions', data.instructions);
+    fd.append('checkInTime', data.checkInTime);
+    fd.append('checkOutTime', data.checkOutTime);
     if (data.photoFile) fd.append('photos', data.photoFile);
 
     try {
@@ -128,6 +130,8 @@ export default function Step5Page() {
             <p className="text-[13px] text-gray-600"><span className="text-gray-500">{t('keys')}</span> {data.keys || 'Key box at the entrance'}</p>
             <p className="text-[13px] text-gray-600"><span className="text-gray-500">{t('accessCode')}</span> {data.accessCode || '—'}</p>
             <p className="text-[13px] text-gray-600 leading-relaxed"><span className="text-gray-500">{t('instructions')}</span> {data.instructions || 'Please close the windows after cleaning.'}</p>
+            <p className="text-[13px] text-gray-600"><span className="text-gray-500">Check-in:</span> {data.checkInTime}</p>
+            <p className="text-[13px] text-gray-600"><span className="text-gray-500">Check-out:</span> {data.checkOutTime}</p>
             <p className="text-[13px] text-gray-600 mt-1"><span className="text-gray-500">{t('frequency')}</span> {t('everyWeek')}</p>
           </div>
         </div>

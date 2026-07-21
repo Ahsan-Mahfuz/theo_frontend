@@ -62,6 +62,28 @@ export default function Step4Page() {
           />
         </div>
 
+        <div className="flex flex-col gap-2">
+          <label className="text-[13px] font-bold text-gray-900">Check-in time</label>
+          <input
+            type="text"
+            value={data.checkInTime}
+            onChange={(e) => updateData({ checkInTime: e.target.value })}
+            placeholder="e.g. 10:00 AM"
+            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[13px] text-gray-900 focus:outline-none focus:border-[#0084FF] focus:ring-1 focus:ring-[#0084FF] transition-all shadow-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-[13px] font-bold text-gray-900">Check-out time</label>
+          <input
+            type="text"
+            value={data.checkOutTime}
+            onChange={(e) => updateData({ checkOutTime: e.target.value })}
+            placeholder="e.g. 04:00 PM"
+            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[13px] text-gray-900 focus:outline-none focus:border-[#0084FF] focus:ring-1 focus:ring-[#0084FF] transition-all shadow-sm"
+          />
+        </div>
+
         <div className="flex items-center gap-3 mt-4">
           <button
             onClick={() => router.push('/dashboard/housing/create/step-3')}
