@@ -88,6 +88,18 @@ export const scheduleApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/schedule/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Schedule', 'Calendar', 'Accommodation', 'HostDashboard'],
     }),
+
+    initiateHandCash: builder.mutation<CleaningSchedule, string>({
+      query: (id) => ({ url: `/schedule/${id}/handcash`, method: 'POST' }),
+      transformResponse: (res: ApiEnvelope<CleaningSchedule>) => res.data,
+      invalidatesTags: ['Schedule', 'Calendar', 'HostDashboard'],
+    }),
+
+    approveHandCash: builder.mutation<CleaningSchedule, string>({
+      query: (id) => ({ url: `/schedule/${id}/handcash/approve`, method: 'POST' }),
+      transformResponse: (res: ApiEnvelope<CleaningSchedule>) => res.data,
+      invalidatesTags: ['Schedule', 'Calendar'],
+    }),
   }),
 });
 
@@ -99,4 +111,6 @@ export const {
   useInvalidateProofMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
+  useInitiateHandCashMutation,
+  useApproveHandCashMutation,
 } = scheduleApi;

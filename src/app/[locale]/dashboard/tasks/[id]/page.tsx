@@ -20,10 +20,13 @@ import {
   useGetScheduleByIdQuery,
   useCompleteScheduleMutation,
   useInvalidateProofMutation,
+  useInitiateHandCashMutation,
+  useApproveHandCashMutation,
 } from '@/store/api/scheduleApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { formatDate, formatDateTime } from '@/lib/datetime';
 import { getApiErrorMessage } from '@/lib/apiError';
+import { useAuth } from '@/store/hooks';
 
 const FALLBACK_ROOM =
   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=500';
@@ -47,9 +50,9 @@ const STATUS_CLS: Record<string, string> = {
   cancelled: 'bg-gray-100 text-gray-500',
 };
 
-const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
+const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released' || s?.paymentStatus === 'paid_handcash';
 const PAYABLE_STATUSES = ['accepted', 'in_progress', 'proof_submitted', 'completed'];
-const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s);
+const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s) && s?.paymentStatus !== 'handcash_pending';
 
 export default function TaskDetailPage() {
   const params = useParams();
@@ -58,10 +61,14 @@ export default function TaskDetailPage() {
   const locale = useLocale();
   const t = useTranslations('Tasks');
   const c = useTranslations('Common');
+  
+  const { user } = useAuth();
 
   const { data, isLoading, isError } = useGetScheduleByIdQuery(id, { skip: !id });
   const [completeSchedule, { isLoading: completing }] = useCompleteScheduleMutation();
   const [invalidateProof, { isLoading: rejecting }] = useInvalidateProofMutation();
+  const [initiateHandCash, { isLoading: initiatingHandCash }] = useInitiateHandCashMutation();
+  const [approveHandCash, { isLoading: approvingHandCash }] = useApproveHandCashMutation();
 
   const [actionError, setActionError] = useState('');
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -93,6 +100,24 @@ export default function TaskDetailPage() {
       await invalidateProof({ id, reason: rejectReason.trim() || undefined }).unwrap();
       setRejectOpen(false);
       setRejectReason('');
+    } catch (err) {
+      setActionError(getApiErrorMessage(err));
+    }
+  };
+
+  const handleHandCash = async () => {
+    setActionError('');
+    try {
+      await initiateHandCash(id).unwrap();
+    } catch (err) {
+      setActionError(getApiErrorMessage(err));
+    }
+  };
+
+  const handleApproveHandCash = async () => {
+    setActionError('');
+    try {
+      await approveHandCash(id).unwrap();
     } catch (err) {
       setActionError(getApiErrorMessage(err));
     }
@@ -135,16 +160,22 @@ export default function TaskDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[16px] font-bold text-gray-900">{t('detailTitle')}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${STATUS_CLS[status] ?? STATUS_CLS.scheduled}`}>
+              {t(`status.${status}` as any)}
+            </span>
             {isPaid(s) && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E5F9F1] text-[#137333]">
                 <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-3 h-3" />
                 {t('paidBadge')}
               </span>
             )}
-            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${STATUS_CLS[status] ?? STATUS_CLS.scheduled}`}>
-              {t(`status.${status}` as any)}
-            </span>
+            {s.paymentStatus === 'handcash_pending' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FFF7E6] text-[#D48806]">
+                <HugeiconsIcon icon={Coins01Icon} className="w-3 h-3" />
+                {t('handCash')}
+              </span>
+            )}
           </div>
         </div>
 
@@ -294,13 +325,40 @@ export default function TaskDetailPage() {
         {needsPayment(s) && (
           <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
             <p className="text-[12px] text-gray-500">{t('payNowHint')}</p>
-            <button
-              onClick={() => goPay(id, acc?._id || s.accommodation?._id || '')}
-              className="w-full h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2"
-            >
-              <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-              {t('payNow')}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleHandCash}
+                disabled={initiatingHandCash}
+                className="flex-1 h-11 rounded-xl bg-[#10B981] text-white text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+                {initiatingHandCash ? c('loading') : t('handCash')}
+              </button>
+              <button
+                onClick={() => goPay(id, acc?._id || s.accommodation?._id || '')}
+                className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2"
+              >
+                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+                {t('payNow')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hand cash pending — cleaner needs to approve */}
+        {s.paymentStatus === 'handcash_pending' && (
+          <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
+            <p className="text-[12px] text-[#D48806] font-medium">{t('handcashPendingHint')}</p>
+            {user?.role === 'cleaner' && (
+              <button
+                onClick={handleApproveHandCash}
+                disabled={approvingHandCash}
+                className="w-full h-11 rounded-xl bg-[#10B981] text-white text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <HugeiconsIcon icon={Tick02Icon} className="w-4 h-4" />
+                {approvingHandCash ? c('loading') : t('approveHandCash')}
+              </button>
+            )}
           </div>
         )}
 

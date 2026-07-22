@@ -56,6 +56,9 @@
     "payNow": "Payer maintenant",
     "payNowHint": "Le travail est terminé mais le paiement est en attente. Payez maintenant pour libérer les fonds à l'agent.",
     "reviewProof": "Voir la preuve",
+    "handCash": "Espèces",
+    "handcashPendingHint": "En attente que l'agent approuve la réception en espèces.",
+    "approveHandCash": "Approuver la réception",
     "status": {
       "scheduled": "En attente",
       "accepted": "Accepté",

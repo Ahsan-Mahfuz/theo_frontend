@@ -56,6 +56,9 @@
     "payNow": "Pay now",
     "payNowHint": "The job is complete but payment is still pending. Pay now to release the funds to the housekeeper.",
     "reviewProof": "Review proof",
+    "handCash": "Hand cash",
+    "handcashPendingHint": "Awaiting cleaner to approve hand cash receipt.",
+    "approveHandCash": "Approve receipt",
     "status": {
       "scheduled": "Awaiting cleaner",
       "accepted": "Accepted",

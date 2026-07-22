@@ -70,6 +70,9 @@
     "cleanerRefusedHint": "This cleaner declined the cleaning. You can schedule another cleaner for this day.",
     "refusedOn": "Refused on {date}",
     "scheduleAnotherCleaner": "Schedule another cleaner",
+    "handCash": "Hand cash",
+    "handcashPendingHint": "Awaiting cleaner to approve hand cash receipt.",
+    "approveHandCash": "Approve receipt",
     "status": {
       "scheduled": "Awaiting cleaner",
       "accepted": "Accepted",

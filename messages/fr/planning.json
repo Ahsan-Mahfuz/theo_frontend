@@ -70,6 +70,9 @@
     "cleanerRefusedHint": "Cet agent a refusé le ménage. Vous pouvez planifier un autre agent pour ce jour.",
     "refusedOn": "Refusé le {date}",
     "scheduleAnotherCleaner": "Planifier un autre agent",
+    "handCash": "Espèces",
+    "handcashPendingHint": "En attente que l'agent approuve la réception en espèces.",
+    "approveHandCash": "Approuver la réception",
     "status": {
       "scheduled": "En attente de l'agent",
       "accepted": "Accepté",

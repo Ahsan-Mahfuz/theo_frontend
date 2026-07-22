@@ -59,10 +59,10 @@ export function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-slate-800 bg-slate-50 hover:bg-slate-100 transition-colors py-2 px-3 rounded-xl border border-slate-200 w-fit"
+        className="flex items-center gap-1 sm:gap-2 text-slate-800 bg-slate-50 hover:bg-slate-100 transition-colors py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border border-slate-200 w-fit"
       >
         <div className="flex-shrink-0 flex items-center justify-center">{selectedLocale.flag}</div>
-        <span className="text-sm font-semibold pr-1">{selectedLocale.label}</span>
+        <span className="hidden md:inline text-[13px] md:text-sm font-semibold pr-1">{selectedLocale.label}</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform text-slate-500 ${isOpen ? "rotate-180" : ""}`}>
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>

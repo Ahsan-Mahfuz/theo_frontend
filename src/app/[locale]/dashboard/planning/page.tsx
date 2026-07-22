@@ -37,6 +37,7 @@ import {
   useCreateScheduleMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
+  useInitiateHandCashMutation,
 } from '@/store/api/scheduleApi';
 import type { Accommodation, AssignedCleaner } from '@/store/types';
 import { resolveAssetUrl } from '@/lib/config';
@@ -98,19 +99,19 @@ const ringFor = (status: string) => {
 
 // Payment state helpers. The cleaner's acceptance is the gate to paying; once
 // the payment is held (or released) the host has paid.
-const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released';
+const isPaid = (s: any) => s?.paymentStatus === 'paid_held' || s?.paymentStatus === 'released' || s?.paymentStatus === 'paid_handcash';
 // Host can pay at any point after the cleaner accepts — including after the job
 // is marked completed (proof_submitted → completed) — as long as they haven't
 // actually paid yet.
 const PAYABLE_STATUSES = ['accepted', 'in_progress', 'proof_submitted', 'completed'];
-const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s);
+const needsPayment = (s: any) => PAYABLE_STATUSES.includes(s?.status) && !isPaid(s) && s?.paymentStatus !== 'handcash_pending';
 
 // Deleting is allowed right up until the host pays — including a cleaning the
 // cleaner already accepted, which the host may have booked by mistake. Paying
 // locks it (mirrors the backend rule). Editing stays stricter: only while the
 // cleaner hasn't responded yet.
 const DELETABLE_STATUSES = ['scheduled', 'accepted', 'refused', 'cancelled'];
-const canDelete = (s: any) => !isPaid(s) && DELETABLE_STATUSES.includes(s?.status);
+const canDelete = (s: any) => !isPaid(s) && DELETABLE_STATUSES.includes(s?.status) && s?.paymentStatus !== 'handcash_pending';
 
 // Small corner badge on a calendar avatar: clock (awaiting), € (pay now),
 // check (paid / completed-and-paid).
@@ -479,6 +480,7 @@ export default function PlanningPage() {
   const [removeConnection] = useRemoveConnectionMutation();
   const [syncCalendars, { isLoading: syncing }] = useSyncCalendarsMutation();
   const [deleteSchedule, { isLoading: deleting }] = useDeleteScheduleMutation();
+  const [initiateHandCash, { isLoading: initiatingHandCash }] = useInitiateHandCashMutation();
 
   const monthData = monthDataRaw as MonthData | undefined;
   const hasConnections = (connections?.length ?? 0) > 0;
@@ -1034,16 +1036,34 @@ export default function PlanningPage() {
                                 {t('paid')}
                               </span>
                             )}
+                            {s.paymentStatus === 'handcash_pending' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FFF7E6] text-[#D48806]">
+                                <HugeiconsIcon icon={Coins01Icon} className="w-3 h-3" />
+                                {t('handCash')}
+                              </span>
+                            )}
                             <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold ${SCHED_STATUS[s.status] ?? SCHED_STATUS.scheduled}`}>
                               {t(`status.${s.status}` as any)}
                             </span>
                             {/* The pay action lives in the "Pay now" (and All) tabs; the
                                 Accepted tab is a read-only view of accepted cleanings. */}
                             {needsPayment(s) && listFilter !== 'accepted' && (
-                              <button onClick={() => goPay(s)} className="h-8 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center gap-1">
-                                <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
-                                {t('payNow')}
-                              </button>
+                              <>
+                                <button onClick={async () => {
+                                  try {
+                                    await initiateHandCash(s._id).unwrap();
+                                  } catch (err) {
+                                    setDeleteError(getApiErrorMessage(err));
+                                  }
+                                }} disabled={initiatingHandCash} className="h-8 px-3 rounded-lg bg-[#10B981] text-white text-[11px] font-bold hover:bg-[#059669] flex items-center gap-1 disabled:opacity-50">
+                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
+                                  {initiatingHandCash ? c('loading') : t('handCash')}
+                                </button>
+                                <button onClick={() => goPay(s)} className="h-8 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center gap-1">
+                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
+                                  {t('payNow')}
+                                </button>
+                              </>
                             )}
                             {/* Cleaner submitted proof (or raised a dispute): host reviews
                                 and validates on the detail page. */}
@@ -1121,6 +1141,12 @@ export default function PlanningPage() {
                   {t('paid')}
                 </span>
               )}
+              {detail.paymentStatus === 'handcash_pending' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FFF7E6] text-[#D48806]">
+                  <HugeiconsIcon icon={Coins01Icon} className="w-3 h-3" />
+                  {t('handCash')}
+                </span>
+              )}
             </div>
 
             {detail.status === 'scheduled' && (
@@ -1149,10 +1175,23 @@ export default function PlanningPage() {
 
             <div className="flex gap-2">
               {needsPayment(detail) && (
-                <button onClick={() => goPay(detail)} className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2">
-                  <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-                  {t('payNow')}
-                </button>
+                <>
+                  <button onClick={async () => {
+                    try {
+                      await initiateHandCash(detail._id).unwrap();
+                      setDetail(null);
+                    } catch (err) {
+                      setDeleteError(getApiErrorMessage(err));
+                    }
+                  }} disabled={initiatingHandCash} className="flex-1 h-11 rounded-xl bg-[#10B981] text-white text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center gap-2 disabled:opacity-50">
+                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+                    {initiatingHandCash ? c('loading') : t('handCash')}
+                  </button>
+                  <button onClick={() => goPay(detail)} className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2">
+                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
+                    {t('payNow')}
+                  </button>
+                </>
               )}
               {(detail.status === 'proof_submitted' || detail.status === 'disputed') && (
                 <button onClick={() => router.push(`/dashboard/tasks/${detail._id}`)} className="flex-1 h-11 rounded-xl bg-[#7C3AED] text-white text-[13px] font-bold hover:bg-[#6D28D9] flex items-center justify-center gap-2">
