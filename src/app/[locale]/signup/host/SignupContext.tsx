@@ -55,12 +55,12 @@ const defaultData: SignupData = {
   bathrooms1: 2,
   bathrooms2: 2,
   surfaceArea: '',
-  startTime: '10:00 AM',
-  endTime: '4:00 PM',
+  startTime: '10:00',
+  endTime: '16:00',
   averageDuration: '2h30',
   proposedRate: '80',
-  checkInTime: '10:00 AM',
-  checkOutTime: '04:00 PM',
+  checkInTime: '10:00',
+  checkOutTime: '16:00',
 };
 
 const SignupContext = createContext<SignupContextType | undefined>(undefined);

@@ -157,7 +157,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
               <HugeiconsIcon icon={Clock01Icon} className="w-4 h-4 text-gray-400" />
               <span className="text-[12px] text-gray-500">{t('checkOutIn')}</span>
             </div>
-            <span className="text-[12px] font-medium text-gray-900">10:00am → 12:30pm</span>
+            <span className="text-[12px] font-medium text-gray-900">10:00 → 16:00</span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">

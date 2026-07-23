@@ -8,30 +8,22 @@ export function TimePickerDropdown({ value, onChange }: { value: string; onChang
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Parse value to hour (1-12), minute (0-59), period (AM/PM)
-  let hour12Str = '12';
+  // Parse 24-hour hour (00-23) and minute (00-59), with legacy 12h fallback handling
+  let hour24Str = '10';
   let minuteStr = '00';
-  let period = 'AM';
 
   if (value) {
-    const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
+    const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
     if (match) {
-      let h = parseInt(match[1]);
+      let h = parseInt(match[1], 10);
       const m = match[2];
       const p = match[3]?.toUpperCase();
 
-      if (p === 'AM' || p === 'PM') {
-        hour12Str = String(h).padStart(2, '0');
-        minuteStr = m;
-        period = p;
-      } else {
-        // 24-hour format fallback
-        period = h >= 12 ? 'PM' : 'AM';
-        h = h % 12;
-        if (h === 0) h = 12;
-        hour12Str = String(h).padStart(2, '0');
-        minuteStr = m;
-      }
+      if (p === 'PM' && h < 12) h += 12;
+      if (p === 'AM' && h === 12) h = 0;
+
+      hour24Str = String(h).padStart(2, '0');
+      minuteStr = m;
     }
   }
 
@@ -45,16 +37,15 @@ export function TimePickerDropdown({ value, onChange }: { value: string; onChang
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
-  const periods = ['AM', 'PM'];
 
-  const handleSelect = (newH12: string, newMin: string, newPeriod: string) => {
-    const formatted = `${newH12}:${newMin} ${newPeriod}`;
+  const handleSelect = (newHour: string, newMin: string) => {
+    const formatted = `${newHour}:${newMin}`;
     onChange(formatted);
   };
 
-  const displayVal = value || `${hour12Str}:${minuteStr} ${period}`;
+  const displayVal = value ? (value.includes(' ') ? `${hour24Str}:${minuteStr}` : value) : `${hour24Str}:${minuteStr}`;
 
   return (
     <div className="relative inline-block text-left w-full" ref={dropdownRef}>
@@ -68,16 +59,17 @@ export function TimePickerDropdown({ value, onChange }: { value: string; onChang
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 z-50 flex bg-white border border-gray-200 rounded-xl shadow-lg h-[240px] overflow-hidden min-w-[180px]">
+        <div className="absolute left-0 mt-1 z-50 flex bg-white border border-gray-200 rounded-xl shadow-lg h-[240px] overflow-hidden w-full min-w-[160px]">
           {/* Hours column */}
-          <div className="flex flex-col w-1/3 overflow-y-auto border-r border-gray-100 scrollbar-none py-1">
+          <div className="flex flex-col w-1/2 overflow-y-auto border-r border-gray-100 scrollbar-none py-1">
+            <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase text-center border-b border-gray-50">Hour</div>
             {hours.map((h) => (
               <button
                 key={h}
                 type="button"
-                onClick={() => handleSelect(h, minuteStr, period)}
+                onClick={() => handleSelect(h, minuteStr)}
                 className={`py-1.5 text-center text-[13px] hover:bg-gray-100 transition-colors ${
-                  h === hour12Str ? 'bg-[#0084FF] text-white font-bold hover:bg-[#0084FF]' : 'text-gray-700'
+                  h === hour24Str ? 'bg-[#0084FF] text-white font-bold hover:bg-[#0084FF]' : 'text-gray-700'
                 }`}
               >
                 {h}
@@ -86,33 +78,18 @@ export function TimePickerDropdown({ value, onChange }: { value: string; onChang
           </div>
 
           {/* Minutes column */}
-          <div className="flex flex-col w-1/3 overflow-y-auto border-r border-gray-100 scrollbar-none py-1">
+          <div className="flex flex-col w-1/2 overflow-y-auto scrollbar-none py-1">
+            <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase text-center border-b border-gray-50">Min</div>
             {minutes.map((m) => (
               <button
                 key={m}
                 type="button"
-                onClick={() => handleSelect(hour12Str, m, period)}
+                onClick={() => handleSelect(hour24Str, m)}
                 className={`py-1.5 text-center text-[13px] hover:bg-gray-100 transition-colors ${
                   m === minuteStr ? 'bg-[#0084FF] text-white font-bold hover:bg-[#0084FF]' : 'text-gray-700'
                 }`}
               >
                 {m}
-              </button>
-            ))}
-          </div>
-
-          {/* AM/PM column */}
-          <div className="flex flex-col w-1/3 py-1">
-            {periods.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => handleSelect(hour12Str, minuteStr, p)}
-                className={`py-1.5 text-center text-[13px] hover:bg-gray-100 transition-colors ${
-                  p === period ? 'bg-[#0084FF] text-white font-bold hover:bg-[#0084FF]' : 'text-gray-700'
-                }`}
-              >
-                {p}
               </button>
             ))}
           </div>

@@ -47,8 +47,8 @@ const defaultData: HousingData = {
   keys: '',
   accessCode: '',
   instructions: '',
-  checkInTime: '10:00 AM',
-  checkOutTime: '04:00 PM',
+  checkInTime: '10:00',
+  checkOutTime: '16:00',
 };
 
 const CreateHousingContext = createContext<CreateHousingContextType | undefined>(undefined);

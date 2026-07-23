@@ -325,21 +325,21 @@ export default function TaskDetailPage() {
         {needsPayment(s) && (
           <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
             <p className="text-[12px] text-gray-500">{t('payNowHint')}</p>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleHandCash}
                 disabled={initiatingHandCash}
-                className="flex-1 h-11 rounded-xl bg-[#10B981] text-white text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#10B981] text-white text-[12px] sm:text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center text-center gap-2 leading-tight disabled:opacity-50 transition-colors"
               >
-                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-                {initiatingHandCash ? c('loading') : t('handCash')}
+                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4 shrink-0" />
+                <span>{initiatingHandCash ? c('loading') : t('handCash')}</span>
               </button>
               <button
                 onClick={() => goPay(id, acc?._id || s.accommodation?._id || '')}
-                className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2"
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center text-center gap-2 leading-tight transition-colors"
               >
-                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-                {t('payNow')}
+                <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4 shrink-0" />
+                <span>{t('payNow')}</span>
               </button>
             </div>
           </div>

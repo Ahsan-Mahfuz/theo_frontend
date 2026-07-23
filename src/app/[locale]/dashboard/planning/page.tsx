@@ -195,8 +195,8 @@ function ScheduleModal({
 
   const [cleanerId, setCleanerId] = useState('');
   const [date, setDate] = useState('');
-  const [checkIn, setCheckIn] = useState('11:00 AM');
-  const [checkOut, setCheckOut] = useState('03:00 PM');
+  const [checkIn, setCheckIn] = useState('10:00');
+  const [checkOut, setCheckOut] = useState('14:00');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
 
@@ -206,25 +206,11 @@ function ScheduleModal({
     if (!state.open) return;
     setError('');
 
-    const formatTo12h = (timeStr?: string, defaultVal = '11:00 AM') => {
-      if (!timeStr) return defaultVal;
-      if (/AM|PM|am|pm/i.test(timeStr)) return timeStr.toUpperCase();
-      const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
-      if (match) {
-        let hour = parseInt(match[1]);
-        const min = match[2];
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        hour = hour % 12 || 12;
-        return `${String(hour).padStart(2, '0')}:${min} ${ampm}`;
-      }
-      return timeStr;
-    };
-
     if (editing) {
       setCleanerId(String(editing.cleaner?._id || editing.cleaner || ''));
       setDate(toDateInput(editing.date));
-      setCheckIn(formatTo12h(editing.checkInTime, '11:00 AM'));
-      setCheckOut(formatTo12h(editing.checkOutTime, '03:00 PM'));
+      setCheckIn(editing.checkInTime || '10:00');
+      setCheckOut(editing.checkOutTime || '14:00');
       setNotes(editing.notes || '');
     } else {
       // Re-schedule prefill: pick the requested cleaner, else the first cleaner
@@ -235,8 +221,8 @@ function ScheduleModal({
         cleaners[0]?.cleaner?._id;
       setCleanerId(preferred ? String(preferred) : '');
       setDate(state.date || '');
-      setCheckIn(state.checkIn || formatTo12h(accommodation?.checkInTime, '11:00 AM'));
-      setCheckOut(state.checkOut || formatTo12h(accommodation?.checkOutTime, '03:00 PM'));
+      setCheckIn(state.checkIn || accommodation?.checkInTime || '10:00');
+      setCheckOut(state.checkOut || accommodation?.checkOutTime || '14:00');
       setNotes(state.notes || '');
     }
   }, [
@@ -261,27 +247,14 @@ function ScheduleModal({
       return;
     }
 
-    const to24h = (time12: string) => {
-      const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
-      if (match) {
-        let hour = parseInt(match[1]);
-        const min = match[2];
-        const ampm = match[3]?.toUpperCase();
-        if (ampm === 'PM' && hour < 12) hour += 12;
-        if (ampm === 'AM' && hour === 12) hour = 0;
-        return `${String(hour).padStart(2, '0')}:${min}`;
-      }
-      return time12;
-    };
-
     try {
       if (editing) {
         await updateSchedule({
           id: editing._id,
           cleanerId,
           date,
-          checkInTime: to24h(checkIn),
-          checkOutTime: to24h(checkOut),
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
           notes,
         }).unwrap();
       } else {
@@ -289,8 +262,8 @@ function ScheduleModal({
           accommodationId,
           cleanerId,
           date,
-          checkInTime: to24h(checkIn),
-          checkOutTime: to24h(checkOut),
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
           notes,
           bookingId: state.bookingId,
         }).unwrap();
@@ -1048,22 +1021,22 @@ export default function PlanningPage() {
                             {/* The pay action lives in the "Pay now" (and All) tabs; the
                                 Accepted tab is a read-only view of accepted cleanings. */}
                             {needsPayment(s) && listFilter !== 'accepted' && (
-                              <>
+                              <div className="flex flex-wrap gap-2">
                                 <button onClick={async () => {
                                   try {
                                     await initiateHandCash(s._id).unwrap();
                                   } catch (err) {
                                     setDeleteError(getApiErrorMessage(err));
                                   }
-                                }} disabled={initiatingHandCash} className="h-8 px-3 rounded-lg bg-[#10B981] text-white text-[11px] font-bold hover:bg-[#059669] flex items-center gap-1 disabled:opacity-50">
-                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
-                                  {initiatingHandCash ? c('loading') : t('handCash')}
+                                }} disabled={initiatingHandCash} className="min-h-[32px] py-1.5 px-3 rounded-lg bg-[#10B981] text-white text-[11px] font-bold hover:bg-[#059669] flex items-center justify-center gap-1 disabled:opacity-50 transition-colors">
+                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5 shrink-0" />
+                                  <span>{initiatingHandCash ? c('loading') : t('handCash')}</span>
                                 </button>
-                                <button onClick={() => goPay(s)} className="h-8 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center gap-1">
-                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5" />
-                                  {t('payNow')}
+                                <button onClick={() => goPay(s)} className="min-h-[32px] py-1.5 px-3 rounded-lg bg-[#0084FF] text-white text-[11px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-1 transition-colors">
+                                  <HugeiconsIcon icon={Coins01Icon} className="w-3.5 h-3.5 shrink-0" />
+                                  <span>{t('payNow')}</span>
                                 </button>
-                              </>
+                              </div>
                             )}
                             {/* Cleaner submitted proof (or raised a dispute): host reviews
                                 and validates on the detail page. */}
@@ -1110,7 +1083,7 @@ export default function PlanningPage() {
       {/* Calendar cell detail popover */}
       {detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200" onClick={() => setDetail(null)}>
-          <div className="bg-white rounded-[20px] w-full max-w-[400px] p-6 shadow-xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-[20px] w-full max-w-[420px] sm:max-w-[440px] p-6 shadow-xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-[16px] font-bold text-gray-900">{t('cleaningDetails')}</h3>
               <button onClick={() => setDetail(null)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
@@ -1173,9 +1146,9 @@ export default function PlanningPage() {
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2.5 pt-1">
               {needsPayment(detail) && (
-                <>
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button onClick={async () => {
                     try {
                       await initiateHandCash(detail._id).unwrap();
@@ -1183,44 +1156,47 @@ export default function PlanningPage() {
                     } catch (err) {
                       setDeleteError(getApiErrorMessage(err));
                     }
-                  }} disabled={initiatingHandCash} className="flex-1 h-11 rounded-xl bg-[#10B981] text-white text-[13px] font-bold hover:bg-[#059669] flex items-center justify-center gap-2 disabled:opacity-50">
-                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-                    {initiatingHandCash ? c('loading') : t('handCash')}
+                  }} disabled={initiatingHandCash} className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-[#10B981] text-white text-[12px] font-bold hover:bg-[#059669] flex items-center justify-center text-center gap-1.5 leading-snug disabled:opacity-50 transition-colors">
+                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4 shrink-0" />
+                    <span>{initiatingHandCash ? c('loading') : t('handCash')}</span>
                   </button>
-                  <button onClick={() => goPay(detail)} className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2">
-                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4" />
-                    {t('payNow')}
+                  <button onClick={() => goPay(detail)} className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-[#0084FF] text-white text-[12px] font-bold hover:bg-[#0073E6] flex items-center justify-center text-center gap-1.5 leading-snug transition-colors">
+                    <HugeiconsIcon icon={Coins01Icon} className="w-4 h-4 shrink-0" />
+                    <span>{t('payNow')}</span>
                   </button>
-                </>
+                </div>
               )}
-              {(detail.status === 'proof_submitted' || detail.status === 'disputed') && (
-                <button onClick={() => router.push(`/dashboard/tasks/${detail._id}`)} className="flex-1 h-11 rounded-xl bg-[#7C3AED] text-white text-[13px] font-bold hover:bg-[#6D28D9] flex items-center justify-center gap-2">
-                  <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-4 h-4" />
-                  {t('reviewProof')}
-                </button>
-              )}
-              {(detail.status === 'refused' || detail.status === 'cancelled') && (
-                <button
-                  onClick={() => openReschedule(detail)}
-                  disabled={acceptedCleaners.length === 0}
-                  title={acceptedCleaners.length === 0 ? t('noAcceptedCleaner') : undefined}
-                  className="flex-1 h-11 rounded-xl bg-[#0084FF] text-white text-[13px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />
-                  {t('scheduleAnotherCleaner')}
-                </button>
-              )}
-              {detail.status === 'scheduled' && (
-                <button onClick={() => { const s = detail; setDetail(null); openEdit(s); }} className="flex-1 h-11 rounded-xl bg-white border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
-                  <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4" />
-                  {c('edit')}
-                </button>
-              )}
-              {canDelete(detail) && (
-                <button onClick={() => { const id = detail._id; setDetail(null); handleDeleteSchedule(id); }} title={c('delete')} className="h-11 px-4 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center">
-                  <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
-                </button>
-              )}
+
+              <div className="flex gap-2">
+                {(detail.status === 'proof_submitted' || detail.status === 'disputed') && (
+                  <button onClick={() => router.push(`/dashboard/tasks/${detail._id}`)} className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-[#7C3AED] text-white text-[12px] font-bold hover:bg-[#6D28D9] flex items-center justify-center gap-2 transition-colors">
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-4 h-4 shrink-0" />
+                    <span>{t('reviewProof')}</span>
+                  </button>
+                )}
+                {(detail.status === 'refused' || detail.status === 'cancelled') && (
+                  <button
+                    onClick={() => openReschedule(detail)}
+                    disabled={acceptedCleaners.length === 0}
+                    title={acceptedCleaners.length === 0 ? t('noAcceptedCleaner') : undefined}
+                    className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-[#0084FF] text-white text-[12px] font-bold hover:bg-[#0073E6] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 shrink-0" />
+                    <span>{t('scheduleAnotherCleaner')}</span>
+                  </button>
+                )}
+                {detail.status === 'scheduled' && (
+                  <button onClick={() => { const s = detail; setDetail(null); openEdit(s); }} className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-white border border-gray-200 text-[12px] font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors">
+                    <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4 shrink-0" />
+                    <span>{c('edit')}</span>
+                  </button>
+                )}
+                {canDelete(detail) && (
+                  <button onClick={() => { const id = detail._id; setDetail(null); handleDeleteSchedule(id); }} title={c('delete')} className="min-h-[44px] px-4 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center transition-colors ml-auto">
+                    <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4 shrink-0" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -71,7 +71,7 @@ export default function Step9Page() {
           <label className="text-[12px] text-gray-800 font-medium">Check-in time</label>
           <div className="w-full">
             <TimePickerDropdown 
-              value={data.checkInTime || '10:00 AM'} 
+              value={data.checkInTime || '10:00'} 
               onChange={(val) => updateData({ checkInTime: val })} 
             />
           </div>
@@ -81,7 +81,7 @@ export default function Step9Page() {
           <label className="text-[12px] text-gray-800 font-medium">Check-out time</label>
           <div className="w-full">
             <TimePickerDropdown 
-              value={data.checkOutTime || '04:00 PM'} 
+              value={data.checkOutTime || '16:00'} 
               onChange={(val) => updateData({ checkOutTime: val })} 
             />
           </div>

@@ -75,7 +75,9 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
   }
 
   const coverImage = resolveAssetUrl(accommodation.photos?.[0]) || FALLBACK_ROOM;
-  const fullAddress = `${accommodation.address}, ${accommodation.city}`;
+  const fullAddress = accommodation.zipCode
+    ? `${accommodation.address}, ${accommodation.zipCode} ${accommodation.city}`
+    : `${accommodation.address}, ${accommodation.city}`;
 
   const cleaners = (accommodation.assignedCleaners ?? []) as any[];
   const cleanerName = (cl: any) =>
@@ -146,13 +148,27 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-gray-400">{t('floor')}</span>
-                    <span className="text-[12px] font-medium text-gray-900">{accommodation.floor}</span>
+                    <span className="text-[12px] font-medium text-gray-900">{accommodation.floor || '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-gray-400">{t('doorCode')}</span>
+                    <span className="text-[12px] font-medium text-gray-900">{accommodation.doorCode || '-'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-gray-400">{t('elevator')}</span>
                     <span className="text-[12px] font-medium text-gray-900">{accommodation.hasElevator ? c('yes') : c('no')}</span>
                   </div>
                 </div>
+
+                {/* Notes (if present) */}
+                {accommodation.notes && (
+                  <div className="bg-[#F8F9FA] rounded-[12px] p-4 flex flex-col gap-1.5 mb-10">
+                    <span className="text-[11px] font-medium text-gray-500">{t('notes')}</span>
+                    <p className="text-[12px] text-gray-700 leading-relaxed whitespace-pre-line">
+                      {accommodation.notes}
+                    </p>
+                  </div>
+                )}
 
                 {/* Cleaner Block — all assigned cleaners with their request status */}
                 {cleaners.length > 0 ? (
@@ -225,7 +241,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                 <div className="flex bg-[#F8F9FA] rounded-[12px] p-4 mb-4">
                   <div className="flex-1 flex flex-col border-r border-gray-200 pr-4">
                     <span className="text-[11px] text-gray-500 mb-1">{t('keyBox')}</span>
-                    <span className="text-[13px] font-bold text-gray-900">{accommodation.keys ? c('yes') : c('no')}</span>
+                    <span className="text-[13px] font-bold text-gray-900">{accommodation.keys || '-'}</span>
                   </div>
                   <div className="flex-1 flex flex-col pl-4">
                     <span className="text-[11px] text-gray-500 mb-1">{t('keyBoxCode')}</span>
@@ -233,9 +249,27 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   </div>
                 </div>
 
+                <div className="flex bg-[#F8F9FA] rounded-[12px] p-4 mb-4">
+                  <div className="flex-1 flex flex-col border-r border-gray-200 pr-4">
+                    <span className="text-[11px] text-gray-500 mb-1">{t('checkInTime')}</span>
+                    <span className="text-[13px] font-bold text-gray-900">{accommodation.checkInTime || '-'}</span>
+                  </div>
+                  <div className="flex-1 flex flex-col pl-4">
+                    <span className="text-[11px] text-gray-500 mb-1">{t('checkOutTime')}</span>
+                    <span className="text-[13px] font-bold text-gray-900">{accommodation.checkOutTime || '-'}</span>
+                  </div>
+                </div>
+
+                {accommodation.frequency && (
+                  <div className="bg-[#F8F9FA] rounded-[12px] p-4 mb-4 flex flex-col">
+                    <span className="text-[11px] text-gray-500 mb-1">{t('frequency')}</span>
+                    <span className="text-[13px] font-bold text-gray-900">{accommodation.frequency}</span>
+                  </div>
+                )}
+
                 <div className="bg-[#F8F9FA] rounded-[12px] p-4 flex flex-col gap-2 mb-6">
                   <span className="text-[11px] text-gray-500">{t('specificInstruction')}</span>
-                  <p className="text-[12px] text-gray-700 leading-relaxed">
+                  <p className="text-[12px] text-gray-700 leading-relaxed whitespace-pre-line">
                     {accommodation.instructions || t('noInstructions')}
                   </p>
                 </div>

@@ -43,39 +43,19 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const minDate = todayInput();
   const [date, setDate] = useState(minDate);
   // Time slots matching the accommodation's defaults
-  const [startTime, setStartTime] = useState('10:00 AM');
-  const [endTime, setEndTime] = useState('04:00 PM');
+  const [startTime, setStartTime] = useState('10:00');
+  const [endTime, setEndTime] = useState('16:00');
   const [error, setError] = useState('');
 
   // Pre-fill from accommodation checkInTime and checkOutTime when loaded
   useEffect(() => {
     if (!accommodation) return;
 
-    // Helper to ensure 'HH:MM AM' format
-    const formatTo12h = (timeStr?: string, defaultVal = '12:00 PM') => {
-      if (!timeStr) return defaultVal;
-      // If it already contains AM/PM, it's fine
-      if (/AM|PM|am|pm/i.test(timeStr)) {
-         return timeStr.toUpperCase();
-      }
-      // If it's 24h, convert it
-      const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
-      if (match) {
-        let hour = parseInt(match[1]);
-        const min = match[2];
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        hour = hour % 12;
-        if (hour === 0) hour = 12;
-        return `${String(hour).padStart(2, '0')}:${min} ${ampm}`;
-      }
-      return timeStr;
-    };
-
     if (accommodation.checkInTime) {
-      setStartTime(formatTo12h(accommodation.checkInTime, '10:00 AM'));
+      setStartTime(accommodation.checkInTime);
     }
     if (accommodation.checkOutTime) {
-      setEndTime(formatTo12h(accommodation.checkOutTime, '04:00 PM'));
+      setEndTime(accommodation.checkOutTime);
     }
   }, [accommodation]);
 
@@ -95,39 +75,20 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const formatDate = (dateStr: string) =>
     formatDateLocal(dateStr, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
 
-  // timeStr is now like "10:00 AM"
-  const formatTimeDisplay = (timeStr: string) => {
-    return timeStr; // Already in 12h format
-  };
-
   const handleNext = async () => {
     setError('');
     if (!cleanerId) {
       setError(t('assignConfirmError'));
       return;
     }
-    
-    // Parse "10:00 AM" to "10:00" (24h) for the backend
-    const to24h = (time12: string) => {
-      const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
-      if (match) {
-        let hour = parseInt(match[1]);
-        const min = match[2];
-        const ampm = match[3]?.toUpperCase();
-        if (ampm === 'PM' && hour < 12) hour += 12;
-        if (ampm === 'AM' && hour === 12) hour = 0;
-        return `${String(hour).padStart(2, '0')}:${min}`;
-      }
-      return time12;
-    };
 
     try {
       const created = await createSchedule({
         accommodationId: id,
         cleanerId,
         date,
-        checkInTime: to24h(startTime),
-        checkOutTime: to24h(endTime),
+        checkInTime: startTime,
+        checkOutTime: endTime,
       }).unwrap();
       router.push(`/dashboard/housing/${id}/payment?scheduleId=${created._id}`);
     } catch (err) {
@@ -321,9 +282,9 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                       <span className="text-[12px] text-gray-500">{t('checkOutIn')}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[12px] font-medium text-gray-900">{formatTimeDisplay(startTime)}</span>
+                      <span className="text-[12px] font-medium text-gray-900">{startTime}</span>
                       <HugeiconsIcon icon={ArrowRight01Icon} className="w-3 h-3 text-gray-400" />
-                      <span className="text-[12px] font-medium text-gray-900">{formatTimeDisplay(endTime)}</span>
+                      <span className="text-[12px] font-medium text-gray-900">{endTime}</span>
                     </div>
                   </div>
 
