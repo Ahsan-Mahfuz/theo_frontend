@@ -17,7 +17,7 @@ export function Header() {
         </div>
 
         {/* Centered Logo */}
-        <Link href="/" className="absolute top-0 left-1/2 -translate-x-1/2 mt-6 ml-5 z-10">
+        <Link href="/" className="absolute top-0 left-1/2 -translate-x-1/2 mt-6 ml-6 z-10">
           <AppImage src="/logo.svg" alt="Gestlio" width={140} height={45} className="h-7 sm:h-8 md:h-10 w-auto" />
         </Link>
 

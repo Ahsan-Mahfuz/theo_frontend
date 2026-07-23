@@ -20,6 +20,7 @@ import { formatDate as formatDateLocal, todayInput } from '@/lib/datetime';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useOpenChat } from '@/hooks/useOpenChat';
+import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
 
 import { TimePickerDropdown } from '@/components/ui/time-picker';
 
@@ -337,20 +338,25 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
 
                 <h2 className="text-[16px] font-bold text-gray-900 mb-6">{t('priceDetails')}</h2>
 
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between text-[12px]">
-                    <span className="text-gray-500">{t('cleaningService')}</span>
-                    <span className="font-medium text-gray-900">{cleaningRate},00 €</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
-                    <span className="text-gray-500">{t('serviceFee')}</span>
-                    <span className="font-medium text-gray-900">3,00 €</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[13px] font-bold">
-                    <span className="text-gray-900">{t('total')}</span>
-                    <span className="text-gray-900">{cleaningRate + 3},00 €</span>
-                  </div>
-                </div>
+                {(() => {
+                  const price = computeSchedulePrice(cleaningRate);
+                  return (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="text-gray-500">{t('cleaningService')}</span>
+                        <span className="font-medium text-gray-900">{formatEuro(price.total)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
+                        <span className="text-gray-500">{t('serviceFee')}</span>
+                        <span className="font-medium text-gray-900">{formatEuro(price.serviceFee)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[13px] font-bold">
+                        <span className="text-gray-900">{t('total')}</span>
+                        <span className="text-gray-900">{formatEuro(price.total)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {error && <p className="text-[12px] text-red-600 mt-6 text-right">{error}</p>}
 

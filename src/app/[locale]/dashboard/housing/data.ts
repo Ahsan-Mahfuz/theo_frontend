@@ -16,7 +16,7 @@ export const HOUSING_DATA = [
     floor: '1st Floor',
     elevator: true,
     cleaningRate: '45,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '2,25 €',
     status: 'Scheduled',
     alert: true,
     cleaner: {
@@ -45,7 +45,7 @@ export const HOUSING_DATA = [
     floor: '2nd Floor',
     elevator: true,
     cleaningRate: '50,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '2,50 €',
     status: 'Scheduled',
     alert: false,
     cleaner: {
@@ -74,7 +74,7 @@ export const HOUSING_DATA = [
     floor: '3rd Floor',
     elevator: true,
     cleaningRate: '55,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '2,75 €',
     status: 'Scheduled',
     alert: false,
     cleaner: {
@@ -103,7 +103,7 @@ export const HOUSING_DATA = [
     floor: '4th Floor',
     elevator: true,
     cleaningRate: '75,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '3,75 €',
     status: 'Scheduled',
     alert: false,
     cleaner: {
@@ -132,7 +132,7 @@ export const HOUSING_DATA = [
     floor: '2nd Floor',
     elevator: false,
     cleaningRate: '55,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '2,75 €',
     status: 'Not Scheduled',
     alert: false,
     cleaner: {
@@ -161,7 +161,7 @@ export const HOUSING_DATA = [
     floor: '5th Floor',
     elevator: true,
     cleaningRate: '45,00 €',
-    serviceFee: '3,00 €',
+    serviceFee: '2,25 €',
     status: 'Not Scheduled',
     alert: false,
     cleaner: {
