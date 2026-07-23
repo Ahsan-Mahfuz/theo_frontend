@@ -7,6 +7,8 @@ export interface AppNotification {
   user: string;
   title: string;
   message: string;
+  titleFr?: string;
+  messageFr?: string;
   type: string;
   data?: any;
   isRead: boolean;
@@ -24,9 +26,13 @@ export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<
       NotificationList,
-      { page?: number; limit?: number; isRead?: boolean; type?: string } | void
+      { page?: number; limit?: number; isRead?: boolean; type?: string; lang?: string } | void
     >({
-      query: (params) => ({ url: '/notification', params: params ?? {} }),
+      query: (params) => {
+        const { lang, ...queryParams } = params || {};
+        const url = lang === 'fr' || lang === 'fn' ? '/notification/fn' : '/notification';
+        return { url, params: queryParams };
+      },
       transformResponse: (res: ApiEnvelope<NotificationList>) => res.data,
       providesTags: ['Notification'],
     }),

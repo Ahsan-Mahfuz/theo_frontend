@@ -8,6 +8,7 @@ import {
   Delete02Icon,
   ArrowLeft02Icon,
 } from '@hugeicons/core-free-icons';
+import { useLocale } from 'next-intl';
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
@@ -22,6 +23,7 @@ const LIMIT = 12;
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
@@ -30,6 +32,7 @@ export default function NotificationsPage() {
   const { data, isLoading, isFetching } = useGetNotificationsQuery({
     page,
     limit: LIMIT,
+    lang: locale,
     ...(filter === 'unread' ? { isRead: false } : {}),
   });
 

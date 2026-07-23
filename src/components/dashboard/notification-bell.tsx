@@ -7,6 +7,7 @@ import {
   BellRingIcon,
   CheckmarkCircle02Icon,
 } from '@hugeicons/core-free-icons';
+import { useLocale } from 'next-intl';
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
@@ -18,13 +19,14 @@ import type { AppNotification } from '@/store/api/notificationApi';
 
 export function NotificationBell() {
   const router = useRouter();
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   // keep the badge + list live over the socket
   useNotifications();
 
-  const { data, isLoading } = useGetNotificationsQuery({ page: 1, limit: 8 });
+  const { data, isLoading } = useGetNotificationsQuery({ page: 1, limit: 8, lang: locale });
   const [markRead] = useMarkNotificationReadMutation();
   const [markAllRead, { isLoading: markingAll }] =
     useMarkAllNotificationsReadMutation();
