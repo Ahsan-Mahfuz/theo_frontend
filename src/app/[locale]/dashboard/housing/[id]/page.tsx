@@ -224,13 +224,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   </div>
                 )}
 
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('cleaningRate')}</span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] text-gray-400">{t('cleaningService')}</span>
-                    <span className="text-[12px] font-medium text-gray-900">{accommodation.cleaningRate},00 €</span>
-                  </div>
-                </div>
+
 
               </div>
 

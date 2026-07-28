@@ -39,7 +39,12 @@
       "justNow": "à l'instant",
       "minAgo": "il y a {count} min",
       "hoursAgo": "{count, plural, one {il y a # heure} other {il y a # heures}}",
-      "daysAgo": "{count, plural, one {il y a # jour} other {il y a # jours}}"
+      "daysAgo": "{count, plural, one {il y a # jour} other {il y a # jours}}",
+      "deleteModalTitle": "Supprimer cet élément",
+      "deleteModalDesc": "Si vous supprimez cet élément, vous ne pourrez plus le récupérer. Voulez-vous continuer ?",
+      "deleteConfirm": "Supprimer",
+      "cancel": "Annuler",
+      "deleting": "Suppression..."
     }
   }
 }

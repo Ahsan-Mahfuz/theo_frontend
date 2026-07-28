@@ -659,10 +659,10 @@ export default function PlanningPage() {
                       <Link href={`/dashboard/housing/${acc._id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-semibold text-[#0084FF] hover:underline">
                         {t('viewDetails')}
                       </Link>
-                      <span className="text-gray-300">·</span>
+                      {/* <span className="text-gray-300">·</span>
                       <Link href={`/dashboard/housing/${acc._id}/edit`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-semibold text-gray-500 hover:underline">
                         {t('editAccommodation')}
-                      </Link>
+                      </Link> */}
                     </div>
                   )}
                 </div>

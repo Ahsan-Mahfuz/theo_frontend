@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, ArrowLeft01Icon } from '@hugeicons/core-free-icons';
+import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, ArrowLeft01Icon, Delete02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
-import { useGetHostDashboardQuery } from '@/store/api/accommodationApi';
+import { useGetHostDashboardQuery, useDeleteTodoItemMutation } from '@/store/api/accommodationApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
@@ -53,7 +53,20 @@ export default function DashboardHome() {
   // endpoint). Recommended schedule comes back on every page but is stable.
   const TODO_PAGE_SIZE = 5;
   const [todoPage, setTodoPage] = useState(1);
+  const [todoToDelete, setTodoToDelete] = useState<any>(null);
   const { data, isLoading, isFetching } = useGetHostDashboardQuery({ page: todoPage, limit: TODO_PAGE_SIZE });
+  const [deleteTodoItem, { isLoading: isDeletingTodo }] = useDeleteTodoItemMutation();
+
+  const handleDeleteConfirm = async () => {
+    if (!todoToDelete) return;
+    try {
+      const id = todoToDelete.scheduleId || todoToDelete.assignmentId;
+      await deleteTodoItem({ kind: todoToDelete.kind, id }).unwrap();
+      setTodoToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete to-do item:', err);
+    }
+  };
 
   const recommendedData = data?.recommended_schedule ?? [];
   const recommendedTotal = data?.recommended_total ?? recommendedData.length;
@@ -196,8 +209,19 @@ export default function DashboardHome() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <span className="text-[13px] text-gray-500 font-medium hidden sm:block">{timeAgo(task.timestamp, t)}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTodoToDelete(task);
+                      }}
+                      title={t('deleteConfirm')}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                    </button>
                     <HugeiconsIcon icon={ArrowRight01Icon} className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
@@ -238,6 +262,41 @@ export default function DashboardHome() {
           )}
         </section>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {todoToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border border-gray-100 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col gap-1.5">
+              <h3 className="text-lg font-bold text-gray-900">{t('deleteModalTitle')}</h3>
+              <p className="text-[13px] text-gray-500 leading-relaxed">
+                {t('deleteModalDesc')}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setTodoToDelete(null)}
+                disabled={isDeletingTodo}
+                className="h-10 px-4 rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeletingTodo}
+                className="h-10 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-[13px] font-semibold text-white disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {isDeletingTodo && (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                )}
+                <span>{isDeletingTodo ? t('deleting') : t('deleteConfirm')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -107,6 +107,17 @@ export const accommodationApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/accommodation/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Accommodation', 'HostDashboard'],
     }),
+
+    deleteTodoItem: builder.mutation<
+      ApiEnvelope<null>,
+      { kind: 'schedule' | 'assignment'; id: string }
+    >({
+      query: ({ kind, id }) => ({
+        url: `/accommodation/todo/${kind}/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['HostDashboard'],
+    }),
   }),
 });
 
@@ -120,4 +131,5 @@ export const {
   useGetAccommodationByIdQuery,
   useUpdateAccommodationMutation,
   useDeleteAccommodationMutation,
+  useDeleteTodoItemMutation,
 } = accommodationApi;

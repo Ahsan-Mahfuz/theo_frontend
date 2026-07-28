@@ -85,13 +85,10 @@ export default function SelectPropertyPage() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[13px] font-bold text-gray-900 mb-1">{acc.name}</span>
-                  <div className="flex items-center gap-1.5 mb-2">
+                  <div className="flex items-center gap-1.5">
                     <HugeiconsIcon icon={Location01Icon} className="w-3.5 h-3.5 text-gray-400" />
                     <span className="text-[11px] text-gray-500">{acc.city}</span>
                   </div>
-                  {typeof acc.cleaningRate === 'number' && (
-                    <span className="text-[11px] font-semibold text-gray-900 mb-2">{acc.cleaningRate} €</span>
-                  )}
                 </div>
               </div>
 
