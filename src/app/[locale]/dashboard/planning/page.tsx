@@ -336,15 +336,15 @@ function ScheduleModal({
 
             <div className="flex gap-3">
               <div className="flex flex-col gap-1.5 flex-1">
-                <label className="text-[12px] font-medium text-gray-700">{t('checkIn')}</label>
-                <div className="w-full">
-                  <TimePickerDropdown value={checkIn} onChange={setCheckIn} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-[12px] font-medium text-gray-700">{t('checkOut')}</label>
                 <div className="w-full">
                   <TimePickerDropdown value={checkOut} onChange={setCheckOut} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[12px] font-medium text-gray-700">{t('checkIn')}</label>
+                <div className="w-full">
+                  <TimePickerDropdown value={checkIn} onChange={setCheckIn} />
                 </div>
               </div>
             </div>

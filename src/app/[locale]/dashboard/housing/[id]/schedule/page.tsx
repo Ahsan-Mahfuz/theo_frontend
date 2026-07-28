@@ -159,16 +159,16 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                     <div className="flex flex-col gap-1 w-full">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('cleaningTime')}</span>
                       <div className="flex flex-wrap gap-4 mt-2">
-                        {/* Check-in custom dropdown picker */}
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[11px] text-gray-500 font-medium">Check-in</span>
-                          <TimePickerDropdown value={startTime} onChange={setStartTime} />
-                        </div>
-
                         {/* Check-out custom dropdown picker */}
                         <div className="flex flex-col gap-1">
                           <span className="text-[11px] text-gray-500 font-medium">Check-out</span>
                           <TimePickerDropdown value={endTime} onChange={setEndTime} />
+                        </div>
+
+                        {/* Check-in custom dropdown picker */}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[11px] text-gray-500 font-medium">Check-in</span>
+                          <TimePickerDropdown value={startTime} onChange={setStartTime} />
                         </div>
                       </div>
                       <span className="text-[10px] text-gray-400 mt-2">{t('timesAutoRetrieved')}</span>
