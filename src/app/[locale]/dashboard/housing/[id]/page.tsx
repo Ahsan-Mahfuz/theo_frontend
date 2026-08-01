@@ -9,6 +9,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatEuro } from '@/lib/pricing';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 
@@ -53,7 +54,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   <Skeleton className="h-4 w-1/2 rounded mb-2" />
                   <Skeleton className="h-3 w-2/3 rounded mb-6" />
                   <div className="flex flex-col gap-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                    {Array.from({ length: 7 }).map((_, i) => (
                       <div key={i} className="flex items-center justify-between">
                         <Skeleton className="h-3 w-24 rounded" />
                         <Skeleton className="h-3 w-16 rounded" />
@@ -157,6 +158,12 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-gray-400">{t('elevator')}</span>
                     <span className="text-[12px] font-medium text-gray-900">{accommodation.hasElevator ? c('yes') : c('no')}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-gray-400">{t('cleaningRate')}</span>
+                    <span className="text-[12px] font-medium text-gray-900">
+                      {accommodation.cleaningRate != null ? formatEuro(Number(accommodation.cleaningRate)) : '—'}
+                    </span>
                   </div>
                 </div>
 

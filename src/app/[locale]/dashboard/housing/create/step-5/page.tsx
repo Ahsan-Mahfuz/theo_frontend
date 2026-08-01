@@ -106,7 +106,7 @@ export default function Step5Page() {
             <p className="text-[13px] text-gray-600">{data.surface || '65'} m²</p>
             <p className="text-[13px] text-gray-600">{data.floor || '3rd floor'}</p>
             <p className="text-[13px] text-gray-600">{data.elevator === 'Yes' ? t('withElevator') : t('noElevator')}</p>
-            <p className="text-[13px] font-medium text-[#0084FF] mt-1">{t('cleaningRatePrefix')} {data.cleaningRate || '55,00 €'}</p>
+            <p className="text-[13px] font-medium text-[#0084FF] mt-1">{t('cleaningRatePrefix')} {data.cleaningRate || '—'}</p>
           </div>
         </div>
 

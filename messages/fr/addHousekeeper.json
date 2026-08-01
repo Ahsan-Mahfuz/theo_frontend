@@ -26,6 +26,7 @@
     "pricePerCleaningLabel": "Prix par ménage (€)",
     "pricePlaceholder": "ex. 55",
     "priceInvalid": "Le prix par ménage doit être supérieur à 0.",
+    "priceFromAccommodation": "Pré-rempli avec le tarif du logement ({rate} €). Vous pouvez le modifier.",
     "messageLabel": "Message à la femme de ménage",
     "messagePlaceholder": "ex. Je recherche une personne de confiance pour un ménage régulier",
     "addHousekeeper": "Ajouter la femme de ménage",

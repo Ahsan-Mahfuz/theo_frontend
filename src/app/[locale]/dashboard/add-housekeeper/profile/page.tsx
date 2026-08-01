@@ -14,6 +14,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
 import { useGetHousekeeperProfileQuery, useAssignCleanerMutation } from '@/store/api/assignmentApi';
+import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { useTranslations } from 'next-intl';
@@ -34,6 +35,19 @@ export default function HousekeeperProfilePage() {
 
   const { data: housekeeper, isLoading } = useGetHousekeeperProfileQuery(id as any, { skip: !id });
   const hk = housekeeper as any;
+
+  // When the host arrives from a specific accommodation, seed the price with
+  // that accommodation's cleaning rate. Seeded once so their own edits (and a
+  // deliberately emptied field) are never overwritten by a refetch.
+  const { data: accommodation } = useGetAccommodationByIdQuery(housingId, { skip: !housingId });
+  const priceSeeded = React.useRef(false);
+  React.useEffect(() => {
+    if (priceSeeded.current) return;
+    const rate = accommodation?.cleaningRate;
+    if (rate == null || Number(rate) <= 0) return;
+    priceSeeded.current = true;
+    setPrice(String(rate));
+  }, [accommodation]);
 
   const [assignCleaner, { isLoading: isAssigning }] = useAssignCleanerMutation();
 
@@ -238,6 +252,11 @@ export default function HousekeeperProfilePage() {
             placeholder={t('pricePlaceholder')}
             className="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 outline-none text-[13px] text-gray-800 focus:border-gray-400 shadow-sm"
           />
+          {accommodation?.cleaningRate != null && Number(accommodation.cleaningRate) > 0 && (
+            <span className="text-[11px] text-gray-400">
+              {t('priceFromAccommodation', { rate: Number(accommodation.cleaningRate) })}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5 w-full md:w-[320px]">
