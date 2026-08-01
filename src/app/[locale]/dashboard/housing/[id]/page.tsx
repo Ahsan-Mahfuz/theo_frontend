@@ -93,7 +93,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
     <main className="w-full px-8 py-10 animate-in fade-in duration-500 mx-auto">
 
       {/* Header */}
-      <h1 className="text-[32px] font-bold text-gray-900 mb-10">Accommodation Details</h1>
+      <h1 className="text-[32px] font-bold text-gray-900 mb-10">{t('title')}</h1>
 
       <div className="flex flex-col lg:flex-row gap-8">
 
@@ -245,12 +245,12 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
 
                 <div className="flex bg-[#F8F9FA] rounded-[12px] p-4 mb-4">
                   <div className="flex-1 flex flex-col border-r border-gray-200 pr-4">
-                    <span className="text-[11px] text-gray-500 mb-1">{t('checkInTime')}</span>
-                    <span className="text-[13px] font-bold text-gray-900">{accommodation.checkInTime || '-'}</span>
-                  </div>
-                  <div className="flex-1 flex flex-col pl-4">
                     <span className="text-[11px] text-gray-500 mb-1">{t('checkOutTime')}</span>
                     <span className="text-[13px] font-bold text-gray-900">{accommodation.checkOutTime || '-'}</span>
+                  </div>
+                  <div className="flex-1 flex flex-col pl-4">
+                    <span className="text-[11px] text-gray-500 mb-1">{t('checkInTime')}</span>
+                    <span className="text-[13px] font-bold text-gray-900">{accommodation.checkInTime || '-'}</span>
                   </div>
                 </div>
 
