@@ -302,6 +302,7 @@ export default function TaskDetailPage() {
           <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
             <p className="text-[12px] text-gray-500">{t('validateCleaningDesc')}</p>
             <div className="flex gap-3">
+              {/* Reject-proof button hidden — caused bugs and isn't part of the intended flow.
               <button
                 onClick={() => setRejectOpen(true)}
                 disabled={completing || rejecting}
@@ -309,6 +310,7 @@ export default function TaskDetailPage() {
               >
                 {t('rejectProof')}
               </button>
+              */}
               <button
                 onClick={handleComplete}
                 disabled={completing || rejecting}
@@ -321,7 +323,8 @@ export default function TaskDetailPage() {
           </div>
         )}
 
-        {/* Pay Now — visible after job is done but host hasn't paid yet */}
+        {/* Pay Now — hidden here. Payment is handled from the schedule/calendar;
+            this page only validates the cleaning after checking the photo proof.
         {needsPayment(s) && (
           <div className="border-t border-gray-100 pt-6 flex flex-col gap-3">
             <p className="text-[12px] text-gray-500">{t('payNowHint')}</p>
@@ -344,6 +347,7 @@ export default function TaskDetailPage() {
             </div>
           </div>
         )}
+        */}
 
         {/* Hand cash pending — cleaner needs to approve */}
         {s.paymentStatus === 'handcash_pending' && (
@@ -382,7 +386,7 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Reject-proof reason modal */}
+      {/* Reject-proof reason modal — hidden along with the "Refuse the proof" button.
       {rejectOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200" onClick={() => !rejecting && setRejectOpen(false)}>
           <div className="bg-white rounded-[20px] w-full max-w-[440px] p-6 shadow-xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -411,6 +415,7 @@ export default function TaskDetailPage() {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }

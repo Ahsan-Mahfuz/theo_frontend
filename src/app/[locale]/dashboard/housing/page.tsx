@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import { useGetAccommodationsQuery } from '@/store/api/accommodationApi';
 import type { Accommodation, AssignedCleaner } from '@/store/types';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatEuro } from '@/lib/pricing';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { SkeletonCard } from '@/components/ui/skeleton';
 
@@ -185,7 +186,7 @@ function HousingCard({ acc }: { acc: Accommodation }) {
             <Stat
               icon={Coins01Icon}
               label={t('perCleaning')}
-              value={acc.cleaningRate != null ? `€${acc.cleaningRate}` : '—'}
+              value={acc.cleaningRate != null ? formatEuro(Number(acc.cleaningRate)) : '—'}
             />
           </div>
 

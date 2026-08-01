@@ -33,6 +33,8 @@
       "cleaningsScheduled": "Cleanings are scheduled",
       "todoTitle": "To Do",
       "todoSubtitle": "Find your current tasks and requests here",
+      "actionRequired": "Action required",
+      "validateNow": "Validate",
       "noTaskLabel": "No task to do",
       "noPendingTask": "You have no pending task",
       "enjoyTime": "Enjoy your time",

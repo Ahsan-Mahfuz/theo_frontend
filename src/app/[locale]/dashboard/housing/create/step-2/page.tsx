@@ -121,6 +121,7 @@ export default function Step2Page() {
           </div>
         </div>
 
+        {/* Cleaning rate field hidden for now
         <div className="flex flex-col gap-2">
           <label className="text-[13px] font-bold text-gray-900">{t('cleaningRateLabel')}</label>
           <input
@@ -132,6 +133,7 @@ export default function Step2Page() {
           />
           <span className="text-[11px] text-gray-500 italic">{t('cleaningRateHint')}</span>
         </div>
+        */}
 
         <div className="flex flex-col gap-2">
           <label className="text-[13px] font-bold text-gray-900">{t('notesLabel')}</label>

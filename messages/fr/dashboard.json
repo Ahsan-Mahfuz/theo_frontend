@@ -33,6 +33,8 @@
       "cleaningsScheduled": "ménages sont planifiés",
       "todoTitle": "À faire",
       "todoSubtitle": "Retrouvez ici vos tâches et demandes en cours",
+      "actionRequired": "Action requise",
+      "validateNow": "Valider",
       "noTaskLabel": "Aucune tâche à faire",
       "noPendingTask": "Vous n'avez aucune tâche en attente",
       "enjoyTime": "Profitez de votre temps",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, ArrowLeft01Icon, Delete02Icon } from '@hugeicons/core-free-icons';
+import { Calendar01Icon, UserAdd01Icon, ArrowRight01Icon, ArrowLeft01Icon, Delete02Icon, Alert02Icon, CheckmarkCircle02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetHostDashboardQuery, useDeleteTodoItemMutation } from '@/store/api/accommodationApi';
@@ -44,6 +44,13 @@ const todoTarget = (task: any): string => {
   return accId ? `/dashboard/housing/${accId}` : '/dashboard';
 };
 const isNegative = (status: string) => ['refused', 'disputed', 'cancelled'].includes(status);
+
+// A cleaner submitted their photo proof and the host has to approve or dispute
+// it. This is the only to-do the host *must* act on, so it gets an amber
+// treatment (accent border, badge, CTA) that sets it apart from the plain
+// informational rows around it.
+const needsValidation = (task: any) =>
+  task.kind === 'schedule' && task.status === 'proof_submitted';
 
 export default function DashboardHome() {
   const t = useTranslations('Dashboard.home');
@@ -188,18 +195,33 @@ export default function DashboardHome() {
             </div>
           ) : todoData.length > 0 ? (
             <div className="flex flex-col gap-4">
-              {todoData.map((task, index) => (
+              {todoData.map((task, index) => {
+                const toValidate = needsValidation(task);
+                return (
                 <div
                   key={task.scheduleId || task.assignmentId || index}
                   onClick={() => router.push(todoTarget(task))}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
+                  className={`relative overflow-hidden rounded-2xl p-4 flex items-center justify-between transition-shadow cursor-pointer ${
+                    toValidate
+                      ? 'bg-[#FFFBF4] border-2 border-[#FF9500] shadow-[0_4px_16px_rgba(255,149,0,0.18)] hover:shadow-[0_6px_22px_rgba(255,149,0,0.28)]'
+                      : 'bg-white border border-gray-100 shadow-sm hover:shadow-md'
+                  }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-200 relative shrink-0">
+                  {/* Accent bar so the row reads as "act on me" even at a glance */}
+                  {toValidate && <span className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#FF9500]" />}
+
+                  <div className={`flex items-center gap-4 ${toValidate ? 'pl-2' : ''}`}>
+                    <div className={`w-16 h-16 rounded-xl overflow-hidden bg-gray-200 relative shrink-0 ${toValidate ? 'ring-2 ring-[#FF9500] ring-offset-2 ring-offset-[#FFFBF4]' : ''}`}>
                       <AppImage src={photoOf(task.accommodation)} alt="Room" fill className="object-cover" />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className={`text-[12px] font-medium ${isNegative(task.status) ? 'text-red-500' : 'text-gray-500'}`}>{task.label}</span>
+                      {toValidate ? (
+                        <span className="inline-flex items-center gap-1 self-start px-2 py-0.5 mb-1 rounded-full bg-[#FF9500] text-white text-[10px] font-bold uppercase tracking-wide">
+                          <HugeiconsIcon icon={Alert02Icon} className="w-3 h-3" />
+                          {t('actionRequired')}
+                        </span>
+                      ) : null}
+                      <span className={`text-[12px] font-medium ${toValidate ? 'text-[#B36A00] font-bold' : isNegative(task.status) ? 'text-red-500' : 'text-gray-500'}`}>{task.label}</span>
                       <span className="text-[15px] font-bold text-gray-900 mb-0.5">{task.accommodation?.name || t('accommodationFallback')}</span>
                       <div className="flex items-center gap-1.5">
                         <div className="w-5 h-5 rounded-full bg-gray-300 overflow-hidden relative">
@@ -211,6 +233,19 @@ export default function DashboardHome() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[13px] text-gray-500 font-medium hidden sm:block">{timeAgo(task.timestamp, t)}</span>
+                    {toValidate && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(todoTarget(task));
+                        }}
+                        className="hidden sm:inline-flex h-9 px-4 rounded-xl bg-[#FF9500] hover:bg-[#E68600] text-white text-[12px] font-semibold items-center gap-1.5 transition-colors"
+                      >
+                        <HugeiconsIcon icon={CheckmarkCircle02Icon} className="w-4 h-4" />
+                        {t('validateNow')}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -222,10 +257,11 @@ export default function DashboardHome() {
                     >
                       <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
                     </button>
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="w-4 h-4 text-gray-400" />
+                    <HugeiconsIcon icon={ArrowRight01Icon} className={`w-4 h-4 ${toValidate ? 'text-[#FF9500]' : 'text-gray-400'}`} />
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {/* Pagination controls */}
               {totalTodoPages > 1 && (

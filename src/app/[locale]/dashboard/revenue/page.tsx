@@ -23,22 +23,15 @@ import {
 } from '@/store/api/paymentApi';
 import { resolveAssetUrl } from '@/lib/config';
 import { getApiErrorMessage } from '@/lib/apiError';
+import { formatMoney } from '@/lib/pricing';
 
 const FALLBACK_ROOM =
   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=500';
 
 // Format an amount (already in currency units) using the payment currency.
-const money = (amount: number, currency: string, locale: string) => {
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: (currency || 'eur').toUpperCase(),
-      minimumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${(currency || '').toUpperCase()}`;
-  }
-};
+// Symbol goes after the number ("100,00 €") on every locale.
+const money = (amount: number, currency: string, locale: string) =>
+  formatMoney(amount, currency, locale);
 
 // ─── Transaction detail modal ─────────────────────────────────────────────────
 function TransactionModal({

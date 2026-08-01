@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/datetime';
+import { formatMoney } from '@/lib/pricing';
 import {
   Coins02Icon,
   EuroIcon
@@ -20,6 +21,7 @@ const CustomBroomIcon = ({ className }: { className?: string }) => (
 
 export default function PastCleaningTab() {
   const t = useTranslations('Settings.pastCleaning');
+  const locale = useLocale();
   const { data, isLoading } = useGetMyPaymentsQuery({ limit: 50 });
   const payments = data?.data ?? [];
 
@@ -32,7 +34,7 @@ export default function PastCleaningTab() {
       [p.accommodation?.city, p.accommodation?.zipCode].filter(Boolean).join(' ') ||
       p.accommodation?.address ||
       '-',
-    amount: `${((p.amount || 0) / 100).toFixed(2)} ${p.currency?.toUpperCase?.() ?? ''}`.trim(),
+    amount: formatMoney((p.amount || 0) / 100, p.currency, locale),
     status: p.status,
   }));
 
@@ -42,9 +44,9 @@ export default function PastCleaningTab() {
   const totalCount = summary?.count ?? data?.meta?.total ?? payments.length;
   const totalAmount = summary?.totalAmount ?? 0;
   const averageAmount = summary?.averageAmount ?? 0;
-  const currencyLabel =
-    summary?.currency?.toUpperCase?.() ??
-    payments[0]?.currency?.toUpperCase?.() ??
+  const currencyCode =
+    summary?.currency ??
+    payments[0]?.currency ??
     'EUR';
 
   return (
@@ -71,7 +73,7 @@ export default function PastCleaningTab() {
             <HugeiconsIcon icon={Coins02Icon} className="w-5 h-5 text-[#0084FF]" />
           </div>
           <span className="text-[12px] text-gray-500 mb-1">{t('totalAmount')}</span>
-          <span className="text-[20px] font-bold text-gray-900">{totalAmount.toFixed(2)} {currencyLabel}</span>
+          <span className="text-[20px] font-bold text-gray-900">{formatMoney(totalAmount, currencyCode, locale)}</span>
         </div>
 
         <div className="bg-[#FAFAFA] rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-100">
@@ -79,7 +81,7 @@ export default function PastCleaningTab() {
             <HugeiconsIcon icon={EuroIcon} className="w-5 h-5 text-[#0084FF]" />
           </div>
           <span className="text-[12px] text-gray-500 mb-1">{t('averageAmount')}</span>
-          <span className="text-[20px] font-bold text-gray-900">{averageAmount.toFixed(2)} {currencyLabel}</span>
+          <span className="text-[20px] font-bold text-gray-900">{formatMoney(averageAmount, currencyCode, locale)}</span>
         </div>
 
       </div>

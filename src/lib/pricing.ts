@@ -42,3 +42,30 @@ export const formatEuro = (amount: number): string => {
     : rounded.toFixed(2).replace('.', ',');
   return `${text} €`;
 };
+
+// Symbols for the currencies Stripe can hand back; unknown codes render as-is.
+const CURRENCY_SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', GBP: '£' };
+
+export const currencySymbol = (currency?: string | null): string => {
+  const code = (currency || 'EUR').toUpperCase();
+  return CURRENCY_SYMBOLS[code] ?? code;
+};
+
+// Amount + currency with the symbol ALWAYS after the number ("100,00 €"),
+// whatever the active locale would do on its own (en-US puts it in front).
+export const formatMoney = (
+  amount: number,
+  currency?: string | null,
+  locale?: string,
+): string => {
+  let text: string;
+  try {
+    text = new Intl.NumberFormat(locale || 'fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    text = amount.toFixed(2);
+  }
+  return `${text} ${currencySymbol(currency)}`;
+};
