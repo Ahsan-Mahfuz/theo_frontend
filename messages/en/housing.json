@@ -99,7 +99,9 @@
       "accessCodeLabel": "Access code (optional)",
       "accessCodePlaceholder": "Ex: 1234 or Gate digital code",
       "instructionsLabel": "Specific instructions (optional)",
-      "instructionsPlaceholder": "Please close the windows after cleaning."
+      "instructionsPlaceholder": "Please close the windows after cleaning.",
+      "checkOutTimeLabel": "Check-out time",
+      "checkInTimeLabel": "Check-in time"
     },
     "step5": {
       "heading": "Summary",
@@ -114,6 +116,8 @@
       "keys": "Keys:",
       "accessCode": "Access code:",
       "instructions": "Instructions:",
+      "checkOut": "Check-out:",
+      "checkIn": "Check-in:",
       "frequency": "Frequency:",
       "everyWeek": "Every week",
       "validationError": "Please fill in the required fields (name, type, address, city, zip, rooms, surface).",
@@ -206,6 +210,8 @@
       "accessCodePlaceholder": "Ex: 1234 or Gate digital code",
       "instructionsLabel": "Specific instructions (optional)",
       "instructionsPlaceholder": "Please close the windows after cleaning.",
+      "checkOutTimeLabel": "Check-out Time",
+      "checkInTimeLabel": "Check-in Time",
       "frequencyLabel": "Usual frequency",
       "selectFrequency": "Select frequency",
       "everyWeek": "Every week",

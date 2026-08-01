@@ -99,7 +99,9 @@
       "accessCodeLabel": "Code d'accès (facultatif)",
       "accessCodePlaceholder": "Ex : 1234 ou code du portail",
       "instructionsLabel": "Instructions spécifiques (facultatif)",
-      "instructionsPlaceholder": "Merci de fermer les fenêtres après le ménage."
+      "instructionsPlaceholder": "Merci de fermer les fenêtres après le ménage.",
+      "checkOutTimeLabel": "Heure de départ",
+      "checkInTimeLabel": "Heure d'arrivée"
     },
     "step5": {
       "heading": "Récapitulatif",
@@ -114,6 +116,8 @@
       "keys": "Clés :",
       "accessCode": "Code d'accès :",
       "instructions": "Instructions :",
+      "checkOut": "Départ :",
+      "checkIn": "Arrivée :",
       "frequency": "Fréquence :",
       "everyWeek": "Chaque semaine",
       "validationError": "Veuillez remplir les champs obligatoires (nom, type, adresse, ville, code postal, pièces, surface).",
@@ -206,6 +210,8 @@
       "accessCodePlaceholder": "Ex : 1234 ou code du portail",
       "instructionsLabel": "Instructions spécifiques (facultatif)",
       "instructionsPlaceholder": "Merci de fermer les fenêtres après le ménage.",
+      "checkOutTimeLabel": "Heure de départ",
+      "checkInTimeLabel": "Heure d'arrivée",
       "frequencyLabel": "Fréquence habituelle",
       "selectFrequency": "Sélectionnez une fréquence",
       "everyWeek": "Chaque semaine",

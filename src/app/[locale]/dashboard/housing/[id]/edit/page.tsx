@@ -340,21 +340,22 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
                 <label className="text-[12px] font-medium text-gray-700">{t('instructionsLabel')}</label>
                 <textarea value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder={t('instructionsPlaceholder')} className="h-24 p-4 rounded-xl bg-[#F8F9FA] border-transparent text-[13px] text-gray-900 focus:bg-white focus:border-[#0084FF] focus:ring-4 focus:ring-[#0084FF]/10 outline-none transition-all resize-none"></textarea>
               </div>
+              {/* Check-out comes first: the guest leaves, then the next one arrives. */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-medium text-gray-700">Check-in Time</label>
+                <label className="text-[12px] font-medium text-gray-700">{t('checkOutTimeLabel')}</label>
                 <div className="w-full">
-                  <TimePickerDropdown 
-                    value={checkInTime} 
-                    onChange={setCheckInTime} 
+                  <TimePickerDropdown
+                    value={checkOutTime}
+                    onChange={setCheckOutTime}
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-medium text-gray-700">Check-out Time</label>
+                <label className="text-[12px] font-medium text-gray-700">{t('checkInTimeLabel')}</label>
                 <div className="w-full">
-                  <TimePickerDropdown 
-                    value={checkOutTime} 
-                    onChange={setCheckOutTime} 
+                  <TimePickerDropdown
+                    value={checkInTime}
+                    onChange={setCheckInTime}
                   />
                 </div>
               </div>

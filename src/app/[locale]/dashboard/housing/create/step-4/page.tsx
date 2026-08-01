@@ -63,22 +63,23 @@ export default function Step4Page() {
           />
         </div>
 
+        {/* Check-out comes first: the guest leaves, then the next one arrives. */}
         <div className="flex flex-col gap-2">
-          <label className="text-[13px] font-bold text-gray-900">Check-in time</label>
+          <label className="text-[13px] font-bold text-gray-900">{t('checkOutTimeLabel')}</label>
           <div className="w-full">
-            <TimePickerDropdown 
-              value={data.checkInTime || '10:00'} 
-              onChange={(val) => updateData({ checkInTime: val })} 
+            <TimePickerDropdown
+              value={data.checkOutTime || '16:00'}
+              onChange={(val) => updateData({ checkOutTime: val })}
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[13px] font-bold text-gray-900">Check-out time</label>
+          <label className="text-[13px] font-bold text-gray-900">{t('checkInTimeLabel')}</label>
           <div className="w-full">
-            <TimePickerDropdown 
-              value={data.checkOutTime || '16:00'} 
-              onChange={(val) => updateData({ checkOutTime: val })} 
+            <TimePickerDropdown
+              value={data.checkInTime || '10:00'}
+              onChange={(val) => updateData({ checkInTime: val })}
             />
           </div>
         </div>
