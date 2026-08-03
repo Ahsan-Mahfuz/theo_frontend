@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/datetime';
 import {
   ArrowLeft01Icon,
@@ -42,6 +42,7 @@ function TransactionModal({
   onClose: () => void;
 }) {
   const locale = useLocale();
+  const tTypes = useTranslations('Housing.types');
   const { data, isLoading, isError, error } = useGetTransactionDetailQuery(id);
 
   const acc = data?.accommodation;
@@ -117,7 +118,7 @@ function TransactionModal({
                 </div>
                 {acc?.accommodationType && (
                   <span className="text-[11px] text-gray-400 mt-1 capitalize">
-                    {acc.accommodationType}
+                    {tTypes.has?.(acc.accommodationType) ? tTypes(acc.accommodationType as any) : acc.accommodationType}
                   </span>
                 )}
               </div>
@@ -148,8 +149,8 @@ function TransactionModal({
                   Time
                 </span>
                 <span className="text-[12px] font-semibold text-gray-900">
-                  {sched?.checkInTime && sched?.checkOutTime
-                    ? `${sched.checkInTime} – ${sched.checkOutTime}`
+                  {sched?.checkOutTime && sched?.checkInTime
+                    ? `${sched.checkOutTime} – ${sched.checkInTime}`
                     : '—'}
                 </span>
               </div>
@@ -377,10 +378,10 @@ export default function RevenuePage() {
                       </span>
                       <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
                         <span>{dateLabel}</span>
-                        {tx.checkInTime && (
+                        {tx.checkOutTime && (
                           <>
                             <span className="text-gray-300">·</span>
-                            <span>{tx.checkInTime}–{tx.checkOutTime}</span>
+                            <span>{tx.checkOutTime}–{tx.checkInTime}</span>
                           </>
                         )}
                       </div>

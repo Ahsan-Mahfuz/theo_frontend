@@ -51,11 +51,11 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   useEffect(() => {
     if (!accommodation) return;
 
-    if (accommodation.checkInTime) {
-      setStartTime(accommodation.checkInTime);
-    }
     if (accommodation.checkOutTime) {
-      setEndTime(accommodation.checkOutTime);
+      setStartTime(accommodation.checkOutTime);
+    }
+    if (accommodation.checkInTime) {
+      setEndTime(accommodation.checkInTime);
     }
   }, [accommodation]);
 
@@ -87,8 +87,8 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
         accommodationId: id,
         cleanerId,
         date,
-        checkInTime: startTime,
-        checkOutTime: endTime,
+        checkOutTime: startTime,
+        checkInTime: endTime,
       }).unwrap();
       router.push(`/dashboard/housing/${id}/payment?scheduleId=${created._id}`);
     } catch (err) {
@@ -162,13 +162,13 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                         {/* Check-out custom dropdown picker */}
                         <div className="flex flex-col gap-1">
                           <span className="text-[11px] text-gray-500 font-medium">Check-out</span>
-                          <TimePickerDropdown value={endTime} onChange={setEndTime} />
+                          <TimePickerDropdown value={startTime} onChange={setStartTime} />
                         </div>
 
                         {/* Check-in custom dropdown picker */}
                         <div className="flex flex-col gap-1">
                           <span className="text-[11px] text-gray-500 font-medium">Check-in</span>
-                          <TimePickerDropdown value={startTime} onChange={setStartTime} />
+                          <TimePickerDropdown value={endTime} onChange={setEndTime} />
                         </div>
                       </div>
                       <span className="text-[10px] text-gray-400 mt-2">{t('timesAutoRetrieved')}</span>

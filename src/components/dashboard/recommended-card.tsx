@@ -72,7 +72,7 @@ export function RecommendedCard({ item }: { item: any }) {
             <div className="flex flex-col min-w-0">
               <span className="text-[10px] text-gray-400 leading-none mb-0.5">{t('timeSlotLabel')}</span>
               <span className="text-[11px] font-semibold text-gray-800 leading-tight truncate">
-                {item.checkInTime || '—'}{item.checkOutTime ? ` - ${item.checkOutTime}` : ''}
+                {item.checkOutTime || '—'}{item.checkInTime ? ` - ${item.checkInTime}` : ''}
               </span>
             </div>
           </div>

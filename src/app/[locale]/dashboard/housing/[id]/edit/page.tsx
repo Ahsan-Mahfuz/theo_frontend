@@ -71,8 +71,8 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
     setAccessCode(accommodation.accessCode ?? '');
     setInstructions(accommodation.instructions ?? '');
     setFrequency(accommodation.frequency ?? '');
-    setCheckInTime(accommodation.checkInTime ?? '10:00');
-    setCheckOutTime(accommodation.checkOutTime ?? '16:00');
+    setCheckInTime(accommodation.checkInTime ?? '16:00');
+    setCheckOutTime(accommodation.checkOutTime ?? '10:00');
   }, [accommodation]);
 
   const cleaners = (accommodation?.assignedCleaners ?? []) as any[];

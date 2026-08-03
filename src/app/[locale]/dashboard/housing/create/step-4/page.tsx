@@ -68,7 +68,7 @@ export default function Step4Page() {
           <label className="text-[13px] font-bold text-gray-900">{t('checkOutTimeLabel')}</label>
           <div className="w-full">
             <TimePickerDropdown
-              value={data.checkOutTime || '16:00'}
+              value={data.checkOutTime || '10:00'}
               onChange={(val) => updateData({ checkOutTime: val })}
             />
           </div>
@@ -78,7 +78,7 @@ export default function Step4Page() {
           <label className="text-[13px] font-bold text-gray-900">{t('checkInTimeLabel')}</label>
           <div className="w-full">
             <TimePickerDropdown
-              value={data.checkInTime || '10:00'}
+              value={data.checkInTime || '16:00'}
               onChange={(val) => updateData({ checkInTime: val })}
             />
           </div>

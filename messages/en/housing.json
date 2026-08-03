@@ -1,5 +1,11 @@
 {
   "Housing": {
+    "types": {
+      "Apartment": "Apartment",
+      "House": "House",
+      "Studio": "Studio",
+      "Other": "Other"
+    },
     "list": {
       "title": "My Accommodation",
       "filter": "Filter",

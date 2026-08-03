@@ -197,7 +197,7 @@ export default function TaskDetailPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <HugeiconsIcon icon={Time02Icon} className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-[11px] text-gray-600">{s.checkInTime}–{s.checkOutTime}</span>
+              <span className="text-[11px] text-gray-600">{s.checkOutTime}–{s.checkInTime}</span>
             </div>
           </div>
         </div>

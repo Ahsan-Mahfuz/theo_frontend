@@ -990,7 +990,7 @@ export default function PlanningPage() {
                                 <span className="text-gray-300">·</span>
                                 <span className="inline-flex items-center gap-1">
                                   <HugeiconsIcon icon={Clock01Icon} className="w-3 h-3" />
-                                  {s.checkInTime}–{s.checkOutTime}
+                                  {s.checkOutTime}–{s.checkInTime}
                                 </span>
                                 {s.booking && (
                                   <>
@@ -1099,7 +1099,7 @@ export default function PlanningPage() {
                 <span className="text-[14px] font-bold text-gray-900 truncate">{cleanerNameOf(detail.cleaner, t('cleaner'))}</span>
                 <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
                   <HugeiconsIcon icon={Clock01Icon} className="w-3.5 h-3.5" />
-                  {formatDate(detail.date, { weekday: 'short', day: 'numeric', month: 'short' }, locale)} · {detail.checkInTime}–{detail.checkOutTime}
+                  {formatDate(detail.date, { weekday: 'short', day: 'numeric', month: 'short' }, locale)} · {detail.checkOutTime}–{detail.checkInTime}
                 </div>
               </div>
             </div>

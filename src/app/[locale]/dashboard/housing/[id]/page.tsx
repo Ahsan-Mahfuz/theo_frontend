@@ -28,6 +28,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
   const id = resolvedParams.id;
   const t = useTranslations('Housing.details');
   const c = useTranslations('Common');
+  const tTypes = useTranslations('Housing.types');
   const { data: accommodation, isLoading } = useGetAccommodationByIdQuery(id);
 
   if (isLoading || !accommodation) {
@@ -137,7 +138,9 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                 <div className="flex flex-col gap-4 mb-10">
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-gray-400">{t('accommodationType')}</span>
-                    <span className="text-[12px] font-medium text-gray-900">{accommodation.accommodationType}</span>
+                    <span className="text-[12px] font-medium text-gray-900">
+                      {accommodation.accommodationType ? (tTypes.has?.(accommodation.accommodationType) ? tTypes(accommodation.accommodationType as any) : accommodation.accommodationType) : '-'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-gray-400">{t('bedrooms')}</span>
@@ -215,7 +218,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                       ))}
                     </div>
                     <Link href={`/dashboard/add-housekeeper?source=cleaners&housingId=${id}`} className="w-full mt-4">
-                      <button className="w-full h-10 rounded-xl bg-[#F4F4F5] text-[12px] font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+                      <button className="w-full h-11 rounded-xl bg-black text-white hover:bg-gray-800 font-semibold text-[13px] transition-colors shadow-sm">
                         {t('addCleaner')}
                       </button>
                     </Link>
@@ -224,7 +227,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   <div className="flex flex-col mb-10">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('cleaner')}</span>
                     <Link href={`/dashboard/add-housekeeper?source=cleaners&housingId=${id}`} className="w-full">
-                      <button className="w-full h-10 rounded-xl bg-[#F4F4F5] text-[12px] font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+                      <button className="w-full h-11 rounded-xl bg-black text-white hover:bg-gray-800 font-semibold text-[13px] transition-colors shadow-sm">
                         {t('assignCleaner')}
                       </button>
                     </Link>
@@ -277,7 +280,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
 
                 <div className="mt-auto flex flex-col gap-3">
                   <Link href={`/dashboard/housing/${id}/edit`} className="w-full">
-                    <button className="w-full h-12 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                    <button className="w-full h-12 bg-black text-white hover:bg-gray-800 font-semibold text-[13px] rounded-xl transition-colors shadow-sm">
                       {t('editInformation')}
                     </button>
                   </Link>

@@ -24,6 +24,7 @@ const parseAmount = (v: string): number => {
 export default function Step5Page() {
   const t = useTranslations('Housing.step5');
   const c = useTranslations('Common');
+  const tTypes = useTranslations('Housing.types');
   const router = useRouter();
   const { data } = useCreateHousing();
   const [createAccommodation, { isLoading }] = useCreateAccommodationMutation();
@@ -94,6 +95,11 @@ export default function Step5Page() {
           <h3 className="text-[13px] font-bold text-gray-900 mb-3">{t('generalInfo')}</h3>
           <div className="flex flex-col gap-2">
             <p className="text-[13px] text-gray-600">{data.name || 'Appartement T3 - City Center'}</p>
+            {data.type && (
+              <p className="text-[13px] text-gray-500 font-medium">
+                {tTypes.has?.(data.type) ? tTypes(data.type as any) : data.type}
+              </p>
+            )}
             <p className="text-[13px] text-gray-600">{data.address || '15 Rue de la Paix, 75002 Paris'}</p>
           </div>
         </div>

@@ -116,6 +116,7 @@ function CleanerRow({
 
 function HousingCard({ acc }: { acc: Accommodation }) {
   const t = useTranslations('Housing.list');
+  const tTypes = useTranslations('Housing.types');
   const image = resolveAssetUrl(acc.photos?.[0]) || FALLBACK_IMAGE;
   const scheduled = acc.status === 'scheduled';
   const statusLabel = scheduled ? t('scheduled') : t('notScheduled');
@@ -140,7 +141,7 @@ function HousingCard({ acc }: { acc: Accommodation }) {
           />
           {/* Status badge */}
           <span
-            className={`absolute top-3 left-3 inline-flex px-3 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur ${
+            className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur ${
               scheduled
                 ? 'bg-[#E5F9F1]/90 text-[#48C79D]'
                 : 'bg-[#FFF0F0]/90 text-[#FF4D4F]'
@@ -152,7 +153,7 @@ function HousingCard({ acc }: { acc: Accommodation }) {
           {acc.accommodationType && (
             <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-white/90 text-gray-700 shadow-sm backdrop-blur">
               <HugeiconsIcon icon={Home01Icon} className="w-3 h-3" />
-              {acc.accommodationType}
+              {tTypes.has?.(acc.accommodationType) ? tTypes(acc.accommodationType as any) : acc.accommodationType}
             </span>
           )}
         </div>
