@@ -51,6 +51,9 @@ export default function MessagePage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     requestedConversationId,
   );
+  // Below lg the list and the thread can't sit side by side, so the page behaves
+  // like a master/detail: the list, then the thread with a back button.
+  const [showChatOnMobile, setShowChatOnMobile] = useState(!!requestedConversationId);
   const [text, setText] = useState('');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<{ id: string; messageType: string; hasFile: boolean } | null>(null);
@@ -94,7 +97,10 @@ export default function MessagePage() {
 
   // Open the conversation requested via ?conversationId= (e.g. a "Message" button).
   useEffect(() => {
-    if (requestedConversationId) setActiveConversationId(requestedConversationId);
+    if (requestedConversationId) {
+      setActiveConversationId(requestedConversationId);
+      setShowChatOnMobile(true);
+    }
   }, [requestedConversationId]);
 
   // Otherwise default to the first conversation once loaded.
@@ -231,12 +237,12 @@ export default function MessagePage() {
 
   return (
     <main
-      className="w-full px-8 py-10 animate-in fade-in duration-500 h-[calc(100vh-80px)] flex flex-col"
+      className="w-full px-4 sm:px-6 md:px-8 py-6 md:py-10 animate-in fade-in duration-500 h-[calc(100vh-80px)] min-h-[520px] flex flex-col"
       onClick={() => setMenuOpenId(null)}
     >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 shrink-0">
-        <h1 className="text-[32px] font-bold text-gray-900">Message</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-5 md:mb-8 gap-4 md:gap-6 shrink-0">
+        <h1 className="text-[24px] sm:text-[28px] md:text-[32px] font-bold text-gray-900">Message</h1>
         <div className="flex items-center w-full md:w-[280px] h-11 bg-white border border-gray-200 rounded-xl px-4 gap-2 shadow-sm focus-within:border-[#0084FF] transition-colors">
           <HugeiconsIcon icon={Search01Icon} className="w-4 h-4 text-gray-400" />
           <input
@@ -253,7 +259,11 @@ export default function MessagePage() {
       <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
 
         {/* Left Sidebar (Chat List) */}
-        <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
+        <div
+          className={`w-full lg:w-[320px] shrink-0 flex-col gap-3 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar ${
+            showChatOnMobile ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
           {isLoadingConversations ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-full p-4 rounded-2xl flex justify-between items-start border border-gray-100 bg-white">
@@ -278,10 +288,10 @@ export default function MessagePage() {
               return (
                 <div
                   key={conversation._id}
-                  onClick={() => setActiveConversationId(conversation._id)}
-                  className={`w-full p-4 rounded-2xl flex justify-between items-start cursor-pointer border ${isActive ? 'bg-[#F2F2F2] border-transparent' : 'bg-white border-gray-100 hover:border-gray-200'} transition-colors`}
+                  onClick={() => { setActiveConversationId(conversation._id); setShowChatOnMobile(true); }}
+                  className={`w-full p-3 sm:p-4 rounded-2xl flex justify-between items-start gap-2 cursor-pointer border ${isActive ? 'bg-[#F2F2F2] border-transparent' : 'bg-white border-gray-100 hover:border-gray-200'} transition-colors`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="relative shrink-0">
                       <div className="w-10 h-10 rounded-full overflow-hidden relative">
                         <AppImage src={participantAvatar(participant)} alt={participantName(participant)} fill sizes="40px" className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
@@ -290,9 +300,9 @@ export default function MessagePage() {
                         <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#48C79D] border-2 border-white" />
                       )}
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-bold text-gray-900">{participantName(participant)}</span>
-                      <span className="text-[12px] text-gray-500 line-clamp-1 max-w-[160px]">{conversation.lastMessage || 'Sent you a message'}</span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[13px] font-bold text-gray-900 truncate">{participantName(participant)}</span>
+                      <span className="text-[12px] text-gray-500 line-clamp-1">{conversation.lastMessage || 'Sent you a message'}</span>
                     </div>
                   </div>
                   {conversation.unreadCount > 0 && (
@@ -305,13 +315,25 @@ export default function MessagePage() {
         </div>
 
         {/* Right Area (Active Chat) */}
-        <div className="flex-1 bg-white border border-gray-100 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col overflow-hidden">
+        <div
+          className={`flex-1 min-w-0 bg-white border border-gray-100 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex-col overflow-hidden ${
+            showChatOnMobile ? 'flex' : 'hidden lg:flex'
+          }`}
+        >
 
           {/* Chat Header */}
-          <div className="h-20 border-b border-gray-100 px-6 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full overflow-hidden relative">
+          <div className="h-16 sm:h-20 border-b border-gray-100 px-3 sm:px-6 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <button
+                type="button"
+                onClick={() => setShowChatOnMobile(false)}
+                aria-label="Back to conversations"
+                className="lg:hidden w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 shrink-0"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <div className="relative shrink-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden relative">
                   {activeConversation && (
                     <AppImage src={participantAvatar(activeConversation.otherParticipant)} alt={participantName(activeConversation.otherParticipant)} fill sizes="48px" className="object-cover" placeholderSrc={AVATAR_PLACEHOLDER} />
                   )}
@@ -320,8 +342,8 @@ export default function MessagePage() {
                   <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#48C79D] border-2 border-white" />
                 )}
               </div>
-              <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-gray-900">{activeConversation ? participantName(activeConversation.otherParticipant) : 'Select a conversation'}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[14px] font-bold text-gray-900 truncate">{activeConversation ? participantName(activeConversation.otherParticipant) : 'Select a conversation'}</span>
                 {activeConversation && (
                   <span className={`text-[12px] font-medium ${statusLine.className}`}>{statusLine.text}</span>
                 )}
@@ -330,7 +352,7 @@ export default function MessagePage() {
           </div>
 
           {/* Chat Messages Area */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 bg-white flex flex-col gap-1.5 custom-scrollbar">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 sm:p-6 bg-white flex flex-col gap-1.5 custom-scrollbar">
             {!activeConversationId ? (
               <div className="text-[13px] text-gray-400 m-auto">Select a conversation to start chatting.</div>
             ) : isLoadingMessages ? (
@@ -397,7 +419,8 @@ export default function MessagePage() {
 
                       {/* Actions menu (own, non-deleted messages) */}
                       {(canEdit || canDelete) && (
-                        <div className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        // No hover on touch, so the trigger stays visible below lg.
+                        <div className="relative shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === message._id ? null : message._id); }}
@@ -450,7 +473,7 @@ export default function MessagePage() {
           </div>
 
           {/* Chat Input */}
-          <div className="p-6 bg-white shrink-0">
+          <div className="p-3 sm:p-6 bg-white shrink-0">
             {editing && (
               <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-xl px-4 py-2 mb-2">
                 <span className="text-[12px] text-[#0084FF] font-medium truncate">
@@ -477,7 +500,7 @@ export default function MessagePage() {
                 </button>
               </div>
             )}
-            <div className="w-full bg-[#F2F2F2] rounded-[32px] p-2 pr-2.5 flex items-center gap-4 h-16">
+            <div className="w-full bg-[#F2F2F2] rounded-[32px] p-2 pr-2.5 flex items-center gap-1.5 sm:gap-4 h-14 sm:h-16">
               <input
                 type="text"
                 placeholder={editing ? 'Edit your message…' : pendingFile ? 'Add a caption…' : 'Type Message'}
@@ -485,7 +508,7 @@ export default function MessagePage() {
                 onChange={(e) => { setText(e.target.value); notifyTyping(); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') submitComposer(); if (e.key === 'Escape') { if (editing) cancelEdit(); else if (pendingFile) clearPendingFile(); } }}
                 disabled={!activeConversationId}
-                className="flex-1 bg-transparent border-none outline-none text-[14px] text-gray-800 placeholder-gray-500 pl-6"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-[14px] text-gray-800 placeholder-gray-500 pl-3 sm:pl-6"
               />
               <input
                 ref={fileInputRef}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { StepIndicator } from './components/StepIndicator';
+import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { useCreateHousing } from './CreateHousingContext';
 
 type Errors = Partial<Record<'name' | 'type' | 'address' | 'city' | 'zip', string>>;
@@ -93,10 +94,9 @@ export default function Step1Page() {
 
         <div className="flex flex-col gap-2">
           <label className="text-[13px] font-bold text-gray-900">{t('cityLabel')}</label>
-          <input
-            type="text"
+          <CityAutocomplete
             value={data.city}
-            onChange={(e) => { updateData({ city: e.target.value }); setErrors((p) => ({ ...p, city: undefined })); }}
+            onChange={(city) => { updateData({ city }); setErrors((p) => ({ ...p, city: undefined })); }}
             placeholder={t('cityPlaceholder')}
             className={inputClass(errors.city)}
           />

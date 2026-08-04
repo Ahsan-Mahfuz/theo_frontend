@@ -16,6 +16,7 @@ import { resolveAssetUrl } from '@/lib/config';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { TimePickerDropdown } from '@/components/ui/time-picker';
+import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 
 const avatarFor = (name: string) => `https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=${encodeURIComponent(name || 'H')}`;
 
@@ -262,10 +263,7 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium text-gray-700">{t('cityLabel')}</label>
-                <select value={city} onChange={(e) => setCity(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
-                  <option>Paris</option>
-                  <option>Lyon</option>
-                </select>
+                <CityAutocomplete value={city} onChange={setCity} className={inputClass} />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium text-gray-700">{t('zipLabel')}</label>

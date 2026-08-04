@@ -4,7 +4,7 @@ import { AppImage, AVATAR_PLACEHOLDER } from "@/components/ui/app-image";
 import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from "react";
-import { Settings01Icon, Logout01Icon, Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
+import { Settings01Icon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetMeQuery } from '@/store/api/authApi';
@@ -36,7 +36,6 @@ export function DashboardHeader() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: user } = useGetMeQuery();
@@ -86,38 +85,6 @@ export function DashboardHeader() {
         ))}
       </div>
 
-      {/* Hamburger — the only way to reach the other pages below the md breakpoint. */}
-      <button
-        type="button"
-        aria-label="Menu"
-        aria-expanded={isMobileMenuOpen}
-        onClick={() => setIsMobileMenuOpen((open) => !open)}
-        className="md:hidden order-last ml-1 w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-      >
-        <HugeiconsIcon icon={isMobileMenuOpen ? Cancel01Icon : Menu01Icon} className="w-6 h-6" />
-      </button>
-
-      {/* Mobile nav panel */}
-      {isMobileMenuOpen && (
-        <>
-          <div className="md:hidden fixed inset-0 top-20 bg-black/20 z-40" onClick={() => setIsMobileMenuOpen(false)} />
-          <div className="md:hidden absolute left-0 right-0 top-20 bg-white border-b border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-5 py-3 flex flex-col z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-3 text-[15px] border-b border-gray-50 last:border-b-0 ${
-                  link.isActive(pathname) ? 'text-[#0084FF] font-semibold' : 'text-gray-600 font-medium'
-                }`}
-              >
-                {t(link.key)}
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
-
       <div className="flex items-center gap-3 sm:gap-4 relative" ref={dropdownRef}>
         <NotificationBell />
         <div
@@ -139,6 +106,24 @@ export function DashboardHeader() {
                 <span className="text-[15px] font-bold text-[#4B443B] leading-tight mb-0.5">{displayName}</span>
                 <span className="text-[12px] text-gray-500 leading-tight truncate max-w-[150px]">{email}</span>
               </div>
+            </div>
+
+            {/* Nav links — below md the dropdown is the only way to reach the other pages. */}
+            <div className="md:hidden flex flex-col gap-1 mb-3 pb-3 border-b border-gray-100">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsDropdownOpen(false)}
+                  className={`px-3 py-2.5 rounded-xl transition-colors text-[14px] font-semibold ${
+                    link.isActive(pathname)
+                      ? 'text-[#0084FF] bg-[#0084FF]/5'
+                      : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {t(link.key)}
+                </Link>
+              ))}
             </div>
 
             {/* Links */}

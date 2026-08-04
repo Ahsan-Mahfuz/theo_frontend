@@ -1,4 +1,5 @@
 import { AppImage } from "@/components/ui/app-image";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 export function DownloadCTA() {
@@ -84,9 +85,12 @@ export function DownloadCTA() {
           <p className="text-slate-500 text-[16px] mb-8">
             {t('download.bottomSubtitle')}
           </p>
-          <button className="bg-[#0088FF] hover:bg-[#0077E6] transition-colors text-white rounded-xl px-8 h-12 font-semibold text-[15px]">
+          <Link
+            href="/signup/host/step-1"
+            className="bg-[#0088FF] hover:bg-[#0077E6] transition-colors text-white rounded-xl px-8 h-12 font-semibold text-[15px] flex items-center justify-center"
+          >
             {t('download.bottomCta')}
-          </button>
+          </Link>
         </div>
       </div>
     </section>

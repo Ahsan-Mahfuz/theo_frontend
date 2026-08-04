@@ -1,4 +1,5 @@
 import { AppImage } from '@/components/ui/app-image';
+import Link from 'next/link';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
 
@@ -27,9 +28,11 @@ export default function HeroSection() {
             {t('hero.subtitle')}
           </p>
           <div className="mt-10">
-            <Button className="bg-[#0088FF] hover:bg-[#0077E6] text-white rounded-[10px] px-8 h-12 text-[15px] font-semibold shadow-[0_4px_14px_0_rgba(0,136,255,0.39)] transition-all active:scale-95">
-              {t('hero.cta')}
-            </Button>
+            <Link href="/signup/host/step-1" tabIndex={-1}>
+              <Button className="bg-[#0088FF] hover:bg-[#0077E6] text-white rounded-[10px] px-8 h-12 text-[15px] font-semibold shadow-[0_4px_14px_0_rgba(0,136,255,0.39)] transition-all active:scale-95">
+                {t('hero.cta')}
+              </Button>
+            </Link>
           </div>
         </div>
         

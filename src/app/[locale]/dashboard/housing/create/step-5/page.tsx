@@ -138,7 +138,6 @@ export default function Step5Page() {
             <p className="text-[13px] text-gray-600 leading-relaxed"><span className="text-gray-500">{t('instructions')}</span> {data.instructions || 'Please close the windows after cleaning.'}</p>
             <p className="text-[13px] text-gray-600"><span className="text-gray-500">{t('checkOut')}</span> {data.checkOutTime}</p>
             <p className="text-[13px] text-gray-600"><span className="text-gray-500">{t('checkIn')}</span> {data.checkInTime}</p>
-            <p className="text-[13px] text-gray-600 mt-1"><span className="text-gray-500">{t('frequency')}</span> {t('everyWeek')}</p>
           </div>
         </div>
 

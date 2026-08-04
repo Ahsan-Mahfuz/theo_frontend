@@ -92,8 +92,10 @@ export function NotificationBell() {
         )}
       </button>
 
+      {/* Below sm the panel can't hang off the bell without running past the
+          viewport edge, so it becomes a fixed sheet pinned under the header. */}
       {open && (
-        <div className="absolute right-0 top-[120%] z-50 w-[360px] max-w-[90vw] rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_10px_40px_rgba(0,0,0,0.08)] animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed left-3 right-3 top-[84px] z-50 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_10px_40px_rgba(0,0,0,0.08)] animate-in fade-in zoom-in-95 duration-200 sm:absolute sm:left-auto sm:right-0 sm:top-[120%] sm:w-[360px] sm:max-w-[90vw]">
           <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2">
             <span className="font-bold text-[#4B443B]">Notifications</span>
             {unread > 0 && (

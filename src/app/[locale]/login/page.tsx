@@ -43,7 +43,9 @@ export default function LoginScreen() {
     <div className="flex min-h-screen w-full bg-[#FAFAFA] items-center justify-center font-sans px-4">
       <form className="w-full max-w-[400px] flex flex-col items-center justify-center" onSubmit={handleSubmit}>
         <div className="flex flex-col items-center gap-2 text-center w-full mb-8">
-          <AppImage src="/brand-logo.svg" alt="Logo" width={160} height={60} className="mb-2" />
+          <Link href="/">
+            <AppImage src="/brand-logo.svg" alt="Logo" width={160} height={60} className="mb-2" />
+          </Link>
           <h2 className="text-[22px] text-gray-900 font-semibold">{t('login.welcome')}</h2>
           <p className="text-[14px] text-gray-500 leading-snug">
             {t('login.subtitleLine1')}<br />{t('login.subtitleLine2')}
