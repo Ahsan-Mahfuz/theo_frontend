@@ -266,13 +266,6 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                   </div>
                 </div>
 
-                {accommodation.frequency && (
-                  <div className="bg-[#F8F9FA] rounded-[12px] p-4 mb-4 flex flex-col">
-                    <span className="text-[11px] text-gray-500 mb-1">{t('frequency')}</span>
-                    <span className="text-[13px] font-bold text-gray-900">{accommodation.frequency}</span>
-                  </div>
-                )}
-
                 <div className="bg-[#F8F9FA] rounded-[12px] p-4 flex flex-col gap-2 mb-6">
                   <span className="text-[11px] text-gray-500">{t('specificInstruction')}</span>
                   <p className="text-[12px] text-gray-700 leading-relaxed whitespace-pre-line">

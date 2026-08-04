@@ -64,13 +64,16 @@ export function DashboardHeader() {
   return (
     <nav className="relative w-full bg-white h-20 flex items-center justify-between px-5 md:px-8 border-b border-gray-100">
       <div className="flex items-center">
-        <AppImage
-          src="/logo.svg"
-          alt="Gestlio"
-          width={110}
-          height={35}
-          className="h-10 w-auto"
-        />
+        {/* The logo doubles as the "go home" shortcut. */}
+        <Link href="/dashboard" aria-label="Gestlio">
+          <AppImage
+            src="/logo.svg"
+            alt="Gestlio"
+            width={110}
+            height={35}
+            className="h-10 w-auto cursor-pointer"
+          />
+        </Link>
       </div>
 
       <div className="hidden md:flex items-center gap-8 text-[16px] font-medium text-gray-400">

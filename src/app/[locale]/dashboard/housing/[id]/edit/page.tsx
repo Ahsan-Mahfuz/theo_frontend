@@ -51,7 +51,6 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
   const [keys, setKeys] = useState('');
   const [accessCode, setAccessCode] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [frequency, setFrequency] = useState('');
   const [checkInTime, setCheckInTime] = useState('');
   const [checkOutTime, setCheckOutTime] = useState('');
 
@@ -71,7 +70,6 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
     setKeys(accommodation.keys ?? '');
     setAccessCode(accommodation.accessCode ?? '');
     setInstructions(accommodation.instructions ?? '');
-    setFrequency(accommodation.frequency ?? '');
     setCheckInTime(accommodation.checkInTime ?? '16:00');
     setCheckOutTime(accommodation.checkOutTime ?? '10:00');
   }, [accommodation]);
@@ -119,7 +117,6 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
       fd.append('keys', keys);
       fd.append('accessCode', accessCode);
       fd.append('instructions', instructions);
-      fd.append('frequency', frequency);
       fd.append('checkInTime', checkInTime);
       fd.append('checkOutTime', checkOutTime);
       if (photoFile) fd.append('photos', photoFile);
@@ -356,14 +353,6 @@ export default function EditAccommodationPage({ params }: { params: Promise<{ id
                     onChange={setCheckInTime}
                   />
                 </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-medium text-gray-700">{t('frequencyLabel')}</label>
-                <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
-                  <option value="">{t('selectFrequency')}</option>
-                  <option value="Every week">{t('everyWeek')}</option>
-                  <option value="Every 2 weeks">{t('every2Weeks')}</option>
-                </select>
               </div>
             </div>
 
