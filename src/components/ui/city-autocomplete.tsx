@@ -1,15 +1,8 @@
 'use client';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useEffect, useId, useRef, useState } from 'react';
 import { useLocale } from 'next-intl';
-import {
-  createSessionToken,
-  fetchCitySuggestions,
-  hasGooglePlaces,
-  type PlaceSuggestion,
-} from '@/lib/googlePlaces';
+import { fetchCitySuggestions, type CitySuggestion } from '@/lib/citySearch';
 
 type Props = {
   value: string;
@@ -20,17 +13,16 @@ type Props = {
 };
 
 /**
- * City field backed by Google Places autocomplete. Free text stays allowed — the
- * suggestions only help, and with no API key configured this is a plain input.
+ * City field backed by the free BAN / Photon lookup. Free text stays allowed —
+ * the suggestions only help, and if the lookup fails this is a plain input.
  */
 export function CityAutocomplete({ value, onChange, placeholder, className, disabled }: Props) {
   const locale = useLocale();
   const listId = useId();
-  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const sessionToken = useRef<any>(undefined);
   // Set while the user picks a suggestion, so the resulting value change doesn't
   // immediately re-query and re-open the list.
   const justPicked = useRef(false);
@@ -45,13 +37,14 @@ export function CityAutocomplete({ value, onChange, placeholder, className, disa
 
   // Debounced lookup — one request per pause in typing.
   useEffect(() => {
-    if (!hasGooglePlaces() || disabled) return;
+    if (disabled) return;
     if (justPicked.current) {
       justPicked.current = false;
       return;
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       if (value.trim().length < 2) {
         if (!cancelled) {
@@ -60,10 +53,9 @@ export function CityAutocomplete({ value, onChange, placeholder, className, disa
         }
         return;
       }
-      if (!sessionToken.current) sessionToken.current = await createSessionToken();
       const results = await fetchCitySuggestions(value, {
         language: locale,
-        sessionToken: sessionToken.current,
+        signal: controller.signal,
       });
       if (cancelled) return;
       setSuggestions(results);
@@ -73,14 +65,13 @@ export function CityAutocomplete({ value, onChange, placeholder, className, disa
 
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [value, locale, disabled]);
 
-  const pick = (s: PlaceSuggestion) => {
+  const pick = (s: CitySuggestion) => {
     justPicked.current = true;
-    // A pick closes the billing session; the next lookup starts a fresh one.
-    sessionToken.current = undefined;
     onChange(s.main);
     setSuggestions([]);
     setOpen(false);
