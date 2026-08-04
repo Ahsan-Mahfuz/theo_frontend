@@ -153,6 +153,7 @@
       "manage": "Manage",
       "addCleaner": "Add Cleaner",
       "assignCleaner": "Assign Cleaner",
+      "scheduleHint": "To schedule your cleanings, please assign a cleaning agent.",
       "cleaningRate": "Cleaning Rate",
       "cleaningService": "Cleaning Service",
       "practicalInformation": "Practical Information",

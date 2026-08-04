@@ -153,6 +153,7 @@
       "manage": "Gérer",
       "addCleaner": "Ajouter un agent",
       "assignCleaner": "Assigner un agent",
+      "scheduleHint": "Pour planifier vos ménages, veuillez assigner un agent d'entretien.",
       "cleaningRate": "Tarif du ménage",
       "cleaningService": "Service de ménage",
       "practicalInformation": "Informations pratiques",

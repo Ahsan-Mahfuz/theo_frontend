@@ -217,8 +217,9 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                         </div>
                       ))}
                     </div>
-                    <Link href={`/dashboard/add-housekeeper?source=cleaners&housingId=${id}`} className="w-full mt-4">
-                      <button className="w-full h-11 rounded-xl bg-black text-white hover:bg-gray-800 font-semibold text-[13px] transition-colors shadow-sm">
+                    <p className="text-[12px] text-gray-500 mt-4">{t('scheduleHint')}</p>
+                    <Link href={`/dashboard/add-housekeeper?source=cleaners&housingId=${id}`} className="w-full mt-2">
+                      <button className="w-full h-11 rounded-xl bg-[#0084FF] text-white hover:bg-[#0073E6] font-semibold text-[13px] transition-colors shadow-sm">
                         {t('addCleaner')}
                       </button>
                     </Link>
@@ -226,8 +227,9 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                 ) : (
                   <div className="flex flex-col mb-10">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('cleaner')}</span>
+                    <p className="text-[12px] text-gray-500 mb-2">{t('scheduleHint')}</p>
                     <Link href={`/dashboard/add-housekeeper?source=cleaners&housingId=${id}`} className="w-full">
-                      <button className="w-full h-11 rounded-xl bg-black text-white hover:bg-gray-800 font-semibold text-[13px] transition-colors shadow-sm">
+                      <button className="w-full h-11 rounded-xl bg-[#0084FF] text-white hover:bg-[#0073E6] font-semibold text-[13px] transition-colors shadow-sm">
                         {t('assignCleaner')}
                       </button>
                     </Link>
@@ -280,7 +282,7 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
 
                 <div className="mt-auto flex flex-col gap-3">
                   <Link href={`/dashboard/housing/${id}/edit`} className="w-full">
-                    <button className="w-full h-12 bg-black text-white hover:bg-gray-800 font-semibold text-[13px] rounded-xl transition-colors shadow-sm">
+                    <button className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0073E6] font-semibold text-[13px] rounded-xl transition-colors shadow-sm">
                       {t('editInformation')}
                     </button>
                   </Link>

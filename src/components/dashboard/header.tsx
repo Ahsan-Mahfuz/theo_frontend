@@ -4,7 +4,7 @@ import { AppImage, AVATAR_PLACEHOLDER } from "@/components/ui/app-image";
 import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from "react";
-import { Settings01Icon, Logout01Icon } from '@hugeicons/core-free-icons';
+import { Settings01Icon, Logout01Icon, Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useTranslations } from 'next-intl';
 import { useGetMeQuery } from '@/store/api/authApi';
@@ -15,6 +15,20 @@ import { NotificationBell } from './notification-bell';
 
 const FALLBACK_AVATAR = 'https://ui-avatars.com/api/?background=E5E7EB&color=6B7280&name=';
 
+// Single source of truth for the nav so the desktop bar and the mobile menu never drift apart.
+const NAV_LINKS: { href: string; key: string; isActive: (pathname: string) => boolean }[] = [
+  {
+    href: '/dashboard',
+    key: 'home',
+    isActive: (p) =>
+      p.endsWith('/dashboard') || p.includes('/dashboard/schedule') || p.includes('/dashboard/add-housekeeper'),
+  },
+  { href: '/dashboard/planning', key: 'planning', isActive: (p) => p.includes('/dashboard/planning') },
+  { href: '/dashboard/housing', key: 'housing', isActive: (p) => p.includes('/dashboard/housing') },
+  { href: '/dashboard/message', key: 'message', isActive: (p) => p.includes('/dashboard/message') },
+  // { href: '/dashboard/revenue', key: 'revenue', isActive: (p) => p.includes('/dashboard/revenue') },
+];
+
 export function DashboardHeader() {
   const t = useTranslations('Dashboard.nav');
   const c = useTranslations('Common');
@@ -22,6 +36,7 @@ export function DashboardHeader() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: user } = useGetMeQuery();
@@ -48,7 +63,7 @@ export function DashboardHeader() {
   }, []);
 
   return (
-    <nav className="w-full bg-white h-20 flex items-center justify-between px-8 border-b border-gray-100">
+    <nav className="relative w-full bg-white h-20 flex items-center justify-between px-5 md:px-8 border-b border-gray-100">
       <div className="flex items-center">
         <AppImage
           src="/logo.svg"
@@ -60,39 +75,50 @@ export function DashboardHeader() {
       </div>
 
       <div className="hidden md:flex items-center gap-8 text-[16px] font-medium text-gray-400">
-        <Link 
-          href="/dashboard" 
-          className={pathname.endsWith('/dashboard') || pathname.includes('/dashboard/schedule') || pathname.includes('/dashboard/add-housekeeper') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
-        >
-          {t('home')}
-        </Link>
-        <Link 
-          href="/dashboard/planning" 
-          className={pathname.includes('/dashboard/planning') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
-        >
-          {t('planning')}
-        </Link>
-        <Link 
-          href="/dashboard/housing" 
-          className={pathname.includes('/dashboard/housing') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
-        >
-          {t('housing')}
-        </Link>
-        <Link
-          href="/dashboard/message"
-          className={pathname.includes('/dashboard/message') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
-        >
-          {t('message')}
-        </Link>
-        {/* <Link
-          href="/dashboard/revenue"
-          className={pathname.includes('/dashboard/revenue') ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
-        >
-          {t('revenue')}
-        </Link> */}
+        {NAV_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={link.isActive(pathname) ? "text-[#0084FF] font-semibold" : "hover:text-gray-800 transition-colors"}
+          >
+            {t(link.key)}
+          </Link>
+        ))}
       </div>
 
-      <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+      {/* Hamburger — the only way to reach the other pages below the md breakpoint. */}
+      <button
+        type="button"
+        aria-label="Menu"
+        aria-expanded={isMobileMenuOpen}
+        onClick={() => setIsMobileMenuOpen((open) => !open)}
+        className="md:hidden order-last ml-1 w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+      >
+        <HugeiconsIcon icon={isMobileMenuOpen ? Cancel01Icon : Menu01Icon} className="w-6 h-6" />
+      </button>
+
+      {/* Mobile nav panel */}
+      {isMobileMenuOpen && (
+        <>
+          <div className="md:hidden fixed inset-0 top-20 bg-black/20 z-40" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="md:hidden absolute left-0 right-0 top-20 bg-white border-b border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-5 py-3 flex flex-col z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`py-3 text-[15px] border-b border-gray-50 last:border-b-0 ${
+                  link.isActive(pathname) ? 'text-[#0084FF] font-semibold' : 'text-gray-600 font-medium'
+                }`}
+              >
+                {t(link.key)}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="flex items-center gap-3 sm:gap-4 relative" ref={dropdownRef}>
         <NotificationBell />
         <div
           className="relative w-10 h-10 rounded-full bg-gray-300 cursor-pointer overflow-hidden border border-gray-200"
