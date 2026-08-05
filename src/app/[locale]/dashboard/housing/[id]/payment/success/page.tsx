@@ -42,8 +42,12 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
   const dateLabel = formatDate(s?.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
   const timeLabel = s?.checkOutTime && s?.checkInTime ? `${s.checkOutTime} → ${s.checkInTime}` : '—';
 
-  // latestPayment.amount is the total charged, in the smallest currency unit (cents).
-  const paidTotal = s?.latestPayment?.amount != null ? s.latestPayment.amount / 100 : null;
+  // latestPayment amounts are in the smallest currency unit (cents). The host
+  // paid the cleaner's rate plus the platform fee charged on top of it.
+  const lp = s?.latestPayment;
+  const paidTotal = lp?.amount != null ? lp.amount / 100 : null;
+  const paidCleaning = lp?.cleanerAmount != null ? lp.cleanerAmount / 100 : paidTotal;
+  const paidFee = lp?.platformFee != null ? lp.platformFee / 100 : null;
 
   return (
     <main className="w-full px-8 py-10 animate-in fade-in duration-500 max-w-[600px] mx-auto">
@@ -103,9 +107,13 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
         <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('priceDetails')}</h2>
 
         <div className="flex flex-col gap-3 mb-10">
-          <div className="flex items-center justify-between text-[11px] pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between text-[11px]">
             <span className="text-gray-500">{t('cleaningService')}</span>
-            <span className="font-medium text-gray-900">{paidTotal != null ? formatEuro(paidTotal) : '—'}</span>
+            <span className="font-medium text-gray-900">{paidCleaning != null ? formatEuro(paidCleaning) : '—'}</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] pb-4 border-b border-gray-100">
+            <span className="text-gray-500">{t('serviceFee')}</span>
+            <span className="font-medium text-gray-900">{paidFee != null ? formatEuro(paidFee) : '—'}</span>
           </div>
           <div className="flex items-center justify-between text-[12px] font-bold pt-1">
             <span className="text-gray-900">{t('total')}</span>

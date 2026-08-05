@@ -21,6 +21,7 @@ import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { useOpenChat } from '@/hooks/useOpenChat';
 import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
+import { usePlatformFeePercent } from '@/store/api/settingsApi';
 
 import { TimePickerDropdown } from '@/components/ui/time-picker';
 
@@ -71,6 +72,7 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
   const coverImage = resolveAssetUrl(accommodation?.photos?.[0]) || avatarFor(accommodation?.name || 'H');
   const address = accommodation ? `${accommodation.address}, ${accommodation.city}` : '';
   const cleaningRate = accommodation?.cleaningRate ?? 0;
+  const feePercent = usePlatformFeePercent();
 
   const formatDate = (dateStr: string) =>
     formatDateLocal(dateStr, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, 'en-US');
@@ -300,15 +302,15 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                 <h2 className="text-[16px] font-bold text-gray-900 mb-6">{t('priceDetails')}</h2>
 
                 {(() => {
-                  const price = computeSchedulePrice(cleaningRate);
+                  const price = computeSchedulePrice(cleaningRate, null, feePercent);
                   return (
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between text-[12px]">
                         <span className="text-gray-500">{t('cleaningService')}</span>
-                        <span className="font-medium text-gray-900">{formatEuro(price.total)}</span>
+                        <span className="font-medium text-gray-900">{formatEuro(price.cleaningService)}</span>
                       </div>
                       <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
-                        <span className="text-gray-500">{t('serviceFee')}</span>
+                        <span className="text-gray-500">{t('serviceFee')} ({price.feePercent}%)</span>
                         <span className="font-medium text-gray-900">{formatEuro(price.serviceFee)}</span>
                       </div>
                       <div className="flex items-center justify-between text-[13px] font-bold">

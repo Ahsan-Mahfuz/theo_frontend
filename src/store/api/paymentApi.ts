@@ -34,7 +34,14 @@ export interface PayIntent {
   ephemeralKey: string;
   customerId: string;
   publishableKey: string;
+  /** Total charged to the host, in cents: cleanerAmount + platformFee. */
   amount: number;
+  /** The cleaner's rate, in cents — paid out to them in full. */
+  cleanerAmount: number;
+  /** Platform commission, in cents, charged on top of the cleaner's rate. */
+  platformFee: number;
+  /** Commission percentage used for this intent. */
+  feePercent: number;
   currency: string;
 }
 

@@ -46,6 +46,7 @@ export const baseApi = createApi({
     'Content',
     'Chat',
     'Message',
+    'Settings',
   ],
   endpoints: () => ({}),
 });

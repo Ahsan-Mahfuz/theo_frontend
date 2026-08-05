@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
@@ -16,7 +16,8 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { usePayForScheduleMutation, type PayIntent } from '@/store/api/paymentApi';
 import { resolveAssetUrl } from '@/lib/config';
-import { formatEuro } from '@/lib/pricing';
+import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
+import { usePlatformFeePercent } from '@/store/api/settingsApi';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage } from '@/components/ui/app-image';
 
@@ -90,17 +91,26 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
   const [initError, setInitError] = useState('');
 
   // Create (or reuse) the PaymentIntent for this accepted schedule on mount.
+  //
+  // StrictMode mounts this twice in dev, so the request is cached in a ref and
+  // BOTH mounts subscribe to the same promise. Skipping the second mount
+  // outright would strand the page on "Preparing secure payment…": the first
+  // mount's cleanup has already flipped its `active` flag, so nobody would be
+  // left listening when the response arrives.
+  const request = useRef<{ id: string; promise: Promise<PayIntent> } | null>(null);
   useEffect(() => {
     if (!scheduleId) return;
+    if (request.current?.id !== scheduleId) {
+      request.current = { id: scheduleId, promise: payForSchedule(scheduleId).unwrap() };
+    }
     let active = true;
-    (async () => {
-      try {
-        const res = await payForSchedule(scheduleId).unwrap();
-        if (active) setIntent(res);
-      } catch (err) {
+    request.current.promise.then(
+      (res) => { if (active) setIntent(res); },
+      (err) => {
+        request.current = null; // a remount may retry after a failure
         if (active) setInitError(getApiErrorMessage(err));
-      }
-    })();
+      },
+    );
     return () => { active = false; };
   }, [scheduleId, payForSchedule]);
 
@@ -115,8 +125,15 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
   const coverImage = resolveAssetUrl(accommodation?.photos?.[0]) || avatarFor(accommodation?.name || 'H');
   const address = accommodation ? `${accommodation.address}, ${accommodation.city}` : '';
-  // Real amount charged to the host, from the PaymentIntent (in cents).
-  const total = intent ? intent.amount / 100 : accommodation?.cleaningRate ?? null;
+
+  // Real breakdown from the PaymentIntent (cents): the cleaner's rate plus the
+  // platform fee charged on top of it. Falls back to a local estimate off the
+  // accommodation's rate while the intent is still being created.
+  const feePercent = usePlatformFeePercent();
+  const estimate = computeSchedulePrice(accommodation?.cleaningRate, null, feePercent);
+  const cleaningService = intent ? intent.cleanerAmount / 100 : accommodation ? estimate.cleaningService : null;
+  const serviceFee = intent ? intent.platformFee / 100 : accommodation ? estimate.serviceFee : null;
+  const total = intent ? intent.amount / 100 : accommodation ? estimate.total : null;
 
   // Absolute URL Stripe redirects to after a successful confirmation.
   const returnUrl =
@@ -171,9 +188,15 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         {/* Price */}
         <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">{t('priceDetails')}</h2>
         <div className="flex flex-col gap-3 mb-10">
-          <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between text-[12px]">
             <span className="text-gray-500">{t('cleaningService')}</span>
-            <span className="font-medium text-gray-900">{total != null ? formatEuro(total) : '—'}</span>
+            <span className="font-medium text-gray-900">{cleaningService != null ? formatEuro(cleaningService) : '—'}</span>
+          </div>
+          <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
+            <span className="text-gray-500">
+              {t('serviceFee')} ({intent?.feePercent ?? feePercent}%)
+            </span>
+            <span className="font-medium text-gray-900">{serviceFee != null ? formatEuro(serviceFee) : '—'}</span>
           </div>
           <div className="flex items-center justify-between text-[13px] font-bold pt-1">
             <span className="text-gray-900">{t('total')}</span>

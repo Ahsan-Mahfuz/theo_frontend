@@ -13,6 +13,7 @@ import { useCreateScheduleMutation } from '@/store/api/scheduleApi';
 import type { CleanerAssignment, Housekeeper } from '@/store/types';
 import { resolveAssetUrl } from '@/lib/config';
 import { computeSchedulePrice, formatEuro } from '@/lib/pricing';
+import { usePlatformFeePercent } from '@/store/api/settingsApi';
 import { getApiErrorMessage } from '@/lib/apiError';
 import { AppImage } from '@/components/ui/app-image';
 
@@ -64,7 +65,8 @@ export default function SchedulePaymentPage() {
       'Cleaner'
     : '---';
 
-  const price = computeSchedulePrice(chosen?.pricePerCleaning, property?.cleaningRate);
+  const feePercent = usePlatformFeePercent();
+  const price = computeSchedulePrice(chosen?.pricePerCleaning, property?.cleaningRate, feePercent);
 
   const handleConfirm = async () => {
     setErrorMsg(null);
@@ -141,7 +143,11 @@ export default function SchedulePaymentPage() {
           <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 mb-4">
             <div className="flex justify-between items-center">
                <span className="text-[12px] text-gray-500">{t('cleaningService')}</span>
-               <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.total)}</span>
+               <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.cleaningService)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+               <span className="text-[12px] text-gray-500">{t('serviceFee')} ({price.feePercent}%)</span>
+               <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.serviceFee)}</span>
             </div>
           </div>
           <div className="flex justify-between items-center">
