@@ -122,14 +122,10 @@ const badgeFor = (s: any): { icon: any; cls: string } | null => {
   return null;
 };
 
-// List-view filter tabs → backend `view` buckets. 'all' sends no view param.
+// List-view filter tabs → backend `view` buckets. Only 'all' stays as requested.
 type ListFilter = 'all' | 'awaiting' | 'accepted' | 'pay_now' | 'paid';
 const LIST_FILTERS: { key: ListFilter; labelKey: string }[] = [
   { key: 'all', labelKey: 'filterAll' },
-  { key: 'awaiting', labelKey: 'filterAwaiting' },
-  { key: 'accepted', labelKey: 'filterAccepted' },
-  { key: 'pay_now', labelKey: 'filterPayNow' },
-  { key: 'paid', labelKey: 'filterPaid' },
 ];
 
 // Client-side gate for the list tabs. Mirrors the backend `view` buckets so the
@@ -417,7 +413,7 @@ export default function PlanningPage() {
     isLoading: accLoading,
     isError: accError,
     error: accErrObj,
-  } = useGetPlanningQuery({ page: 1, limit: 20 });
+  } = useGetPlanningQuery({ limit: 1000 });
   const accList = (accommodations?.data ?? []) as Accommodation[];
 
   useEffect(() => {
@@ -443,7 +439,7 @@ export default function PlanningPage() {
     useGetHostSchedulesQuery(
       {
         accommodationId: selectedAccId,
-        limit: 100,
+        limit: 1000,
         view: listFilter === 'all' ? undefined : listFilter,
       },
       { skip: !selectedAccId },
