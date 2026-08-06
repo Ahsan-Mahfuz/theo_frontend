@@ -322,7 +322,7 @@ export default function ScheduleDetailsPage() {
                  <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.cleaningService)}</span>
               </div>
               <div className="flex justify-between items-center">
-                 <span className="text-[12px] text-gray-500">{t('serviceFee')} ({price.feePercent}%)</span>
+                 <span className="text-[12px] text-gray-500">{t('serviceFee')}</span>
                  <span className="text-[12px] font-medium text-gray-900">{formatEuro(price.serviceFee)}</span>
               </div>
            </div>

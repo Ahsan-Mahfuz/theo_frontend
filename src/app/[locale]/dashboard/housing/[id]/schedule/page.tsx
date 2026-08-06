@@ -310,7 +310,7 @@ export default function ScheduleCleaningPage({ params }: { params: Promise<{ id:
                         <span className="font-medium text-gray-900">{formatEuro(price.cleaningService)}</span>
                       </div>
                       <div className="flex items-center justify-between text-[12px] pb-4 border-b border-gray-100">
-                        <span className="text-gray-500">{t('serviceFee')} ({price.feePercent}%)</span>
+                        <span className="text-gray-500">{t('serviceFee')}</span>
                         <span className="font-medium text-gray-900">{formatEuro(price.serviceFee)}</span>
                       </div>
                       <div className="flex items-center justify-between text-[13px] font-bold">
