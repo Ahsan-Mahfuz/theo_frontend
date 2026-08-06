@@ -26,15 +26,26 @@ export function RecommendedCard({ item }: { item: any }) {
   const t = useTranslations('Dashboard.home');
   const router = useRouter();
 
+  const isInvalidTime =
+    !item.checkOutTime ||
+    !item.checkInTime ||
+    item.checkOutTime === item.checkInTime ||
+    (item.checkOutTime === '06:00' && item.checkInTime === '06:00') ||
+    (item.checkOutTime === '00:00' && item.checkInTime === '00:00');
+
   const open = () => {
     const params = new URLSearchParams({ source: 'recommended' });
     const accId = item.accommodation?._id;
     if (accId) params.set('accommodationId', String(accId));
     if (item.recommendedDate) params.set('date', String(item.recommendedDate).slice(0, 10));
-    if (item.checkInTime) params.set('checkIn', String(item.checkInTime));
-    if (item.checkOutTime) params.set('checkOut', String(item.checkOutTime));
+    if (!isInvalidTime && item.checkInTime) params.set('checkIn', String(item.checkInTime));
+    if (!isInvalidTime && item.checkOutTime) params.set('checkOut', String(item.checkOutTime));
     router.push(`/dashboard/schedule/details?${params.toString()}`);
   };
+
+  const timeSlotText = isInvalidTime
+    ? ''
+    : `${item.checkOutTime}${item.checkInTime ? ` - ${item.checkInTime}` : ''}`;
 
   return (
     <div
@@ -72,7 +83,7 @@ export function RecommendedCard({ item }: { item: any }) {
             <div className="flex flex-col min-w-0">
               <span className="text-[10px] text-gray-400 leading-none mb-0.5">{t('timeSlotLabel')}</span>
               <span className="text-[11px] font-semibold text-gray-800 leading-tight truncate">
-                {item.checkOutTime || '—'}{item.checkInTime ? ` - ${item.checkInTime}` : ''}
+                {timeSlotText || '—'}
               </span>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { Location01Icon, Calendar01Icon, Time02Icon, UserIcon } from '@hugeicons
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
+import { TimePickerDropdown } from '@/components/ui/time-picker';
 import { useScheduleContext } from '../ScheduleContext';
 import { useGetAccommodationByIdQuery } from '@/store/api/accommodationApi';
 import { useGetAccommodationCleanersQuery } from '@/store/api/assignmentApi';
@@ -54,11 +55,18 @@ export default function ScheduleDetailsPage() {
     const date = searchParams.get('date') || '';
     const checkInTime = searchParams.get('checkIn') || '';
     const checkOutTime = searchParams.get('checkOut') || '';
+    const isInvalid =
+      !checkInTime ||
+      !checkOutTime ||
+      checkInTime === checkOutTime ||
+      (checkInTime === '06:00' && checkOutTime === '06:00') ||
+      (checkInTime === '00:00' && checkOutTime === '00:00');
+
     const updates: Partial<typeof data> = {};
     if (accommodationId && !data.propertyId) updates.propertyId = accommodationId;
     if (date && !data.date) updates.date = date;
-    if (checkInTime && !data.checkInTime) updates.checkInTime = checkInTime;
-    if (checkOutTime && !data.checkOutTime) updates.checkOutTime = checkOutTime;
+    if (!isInvalid && checkInTime && !data.checkInTime) updates.checkInTime = checkInTime;
+    if (!isInvalid && checkOutTime && !data.checkOutTime) updates.checkOutTime = checkOutTime;
     if (Object.keys(updates).length > 0) updateData(updates);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecommended]);
@@ -206,23 +214,19 @@ export default function ScheduleDetailsPage() {
 
            <div className="flex flex-col mb-8">
               <label className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-3">{t('cleaningTime')}</label>
-              <div className="flex items-center gap-8">
-                 <div className="flex flex-col border-b border-gray-200 pb-2 w-32">
-                    <span className="text-[11px] text-gray-500 mb-1">{t('checkOut')}</span>
-                    <input
-                      type="time"
+              <div className="flex items-center gap-6">
+                 <div className="flex flex-col w-36">
+                    <span className="text-[11px] text-gray-500 mb-1 font-medium">{t('checkOut')}</span>
+                    <TimePickerDropdown
                       value={data.checkOutTime}
-                      onChange={(e) => updateData({ checkOutTime: e.target.value })}
-                      className="text-[13px] font-semibold text-gray-900 outline-none bg-transparent cursor-pointer"
+                      onChange={(v) => updateData({ checkOutTime: v })}
                     />
                  </div>
-                 <div className="flex flex-col border-b border-gray-200 pb-2 w-32">
-                    <span className="text-[11px] text-gray-500 mb-1">{t('checkIn')}</span>
-                    <input
-                      type="time"
+                 <div className="flex flex-col w-36">
+                    <span className="text-[11px] text-gray-500 mb-1 font-medium">{t('checkIn')}</span>
+                    <TimePickerDropdown
                       value={data.checkInTime}
-                      onChange={(e) => updateData({ checkInTime: e.target.value })}
-                      className="text-[13px] font-semibold text-gray-900 outline-none bg-transparent cursor-pointer"
+                      onChange={(v) => updateData({ checkInTime: v })}
                     />
                  </div>
               </div>
@@ -296,7 +300,11 @@ export default function ScheduleDetailsPage() {
                     <HugeiconsIcon icon={Time02Icon} className="w-4 h-4 text-gray-400" />
                     <span className="text-[12px] text-gray-500">{t('checkOutCheckIn')}</span>
                  </div>
-                 <span className="text-[12px] font-medium text-gray-900">{isFormComplete ? `${data.checkOutTime} → ${data.checkInTime}` : '--- → ---'}</span>
+                  <span className="text-[12px] font-medium text-gray-900">
+                    {data.checkOutTime || data.checkInTime
+                      ? `${data.checkOutTime || '—'} → ${data.checkInTime || '—'}`
+                      : '—'}
+                  </span>
               </div>
               <div className="flex justify-between items-center gap-4">
                  <div className="flex items-center gap-2">

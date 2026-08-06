@@ -45,7 +45,7 @@ export function TimePickerDropdown({ value, onChange }: { value: string; onChang
     onChange(formatted);
   };
 
-  const displayVal = value ? (value.includes(' ') ? `${hour24Str}:${minuteStr}` : value) : `${hour24Str}:${minuteStr}`;
+  const displayVal = value ? (value.includes(' ') ? `${hour24Str}:${minuteStr}` : value) : '--:--';
 
   return (
     <div className="relative inline-block text-left w-full" ref={dropdownRef}>
