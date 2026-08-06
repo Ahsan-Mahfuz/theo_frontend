@@ -29,6 +29,7 @@
       "cleanerAccepted": "Accepted",
       "cleanerRefused": "Refused",
       "manageCleaners": "Manage cleaners",
+      "moreCleaners": "+{count} more cleaners",
       "loadError": "Could not load your accommodations.",
       "emptyTitle": "No accommodations yet",
       "emptySubtitle": "Create your first accommodation to get started.",

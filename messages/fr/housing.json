@@ -29,6 +29,7 @@
       "cleanerAccepted": "Accepté",
       "cleanerRefused": "Refusé",
       "manageCleaners": "Gérer les agents",
+      "moreCleaners": "+{count} autre(s) agent(s)",
       "loadError": "Impossible de charger vos logements.",
       "emptyTitle": "Aucun logement pour le moment",
       "emptySubtitle": "Créez votre premier logement pour commencer.",

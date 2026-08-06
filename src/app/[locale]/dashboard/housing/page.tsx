@@ -141,7 +141,10 @@ function HousingCard({ acc }: { acc: Accommodation }) {
   const cleaners = acc.assignedCleaners ?? [];
   const primaries = cleaners.filter((c) => c.role === 'primary');
   const substitutes = cleaners.filter((c) => c.role === 'substitute');
-  const hasCleaners = cleaners.length > 0;
+  const allCleaners = [...primaries, ...substitutes];
+  const hasCleaners = allCleaners.length > 0;
+  const visibleCleaners = allCleaners.slice(0, 2);
+  const remainingCount = allCleaners.length - visibleCleaners.length;
 
   return (
     <Link href={`/dashboard/housing/${acc._id}`} className="block h-full group">
@@ -219,12 +222,19 @@ function HousingCard({ acc }: { acc: Accommodation }) {
                   <HugeiconsIcon icon={ArrowRight01Icon} className="w-3 h-3" />
                 </span>
               </div>
-              {primaries.map((item) => (
-                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('primary')} accommodationCleaningRate={acc.cleaningRate} />
+              {visibleCleaners.map((item) => (
+                <CleanerRow
+                  key={item.assignmentId}
+                  item={item}
+                  roleLabel={item.role === 'primary' ? t('primary') : t('substitutes')}
+                  accommodationCleaningRate={acc.cleaningRate}
+                />
               ))}
-              {substitutes.map((item) => (
-                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('substitutes')} accommodationCleaningRate={acc.cleaningRate} />
-              ))}
+              {remainingCount > 0 && (
+                <span className="text-[10px] font-bold text-[#0084FF] pt-0.5">
+                  {t('moreCleaners', { count: remainingCount })}
+                </span>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 mt-4 px-3 py-2.5 rounded-xl bg-[#F0F7FF] text-[#0084FF]">
