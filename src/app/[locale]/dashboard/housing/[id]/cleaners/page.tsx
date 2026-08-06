@@ -17,6 +17,7 @@ import {
   useRemoveAssignmentMutation,
 } from '@/store/api/assignmentApi';
 import { resolveAssetUrl } from '@/lib/config';
+import { formatEuro } from '@/lib/pricing';
 import { AppImage, AVATAR_PLACEHOLDER } from '@/components/ui/app-image';
 import { Skeleton, SkeletonCircle } from '@/components/ui/skeleton';
 import { useOpenChat } from '@/hooks/useOpenChat';
@@ -180,6 +181,11 @@ export default function AccommodationCleanersPage({ params }: { params: Promise<
                       <div className="flex items-center gap-1.5">
                         <HugeiconsIcon icon={Calendar01Icon} className="w-3.5 h-3.5 text-gray-400" />
                         <span className="text-[11px] font-medium text-gray-700">{t('status', { status: primary.status })}</span>
+                        {(primary.pricePerCleaning ?? accommodation?.cleaningRate) != null && (
+                          <span className="text-[11px] font-bold text-gray-900 ml-1">
+                            • {formatEuro(Number(primary.pricePerCleaning ?? accommodation?.cleaningRate))}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -240,6 +246,11 @@ export default function AccommodationCleanersPage({ params }: { params: Promise<
                           <div className="flex items-center gap-1.5">
                             <HugeiconsIcon icon={Calendar01Icon} className="w-3.5 h-3.5 text-gray-400" />
                             <span className="text-[11px] font-medium text-gray-700">{t('status', { status: sub.status })}</span>
+                            {(sub.pricePerCleaning ?? accommodation?.cleaningRate) != null && (
+                              <span className="text-[11px] font-bold text-gray-900 ml-1">
+                                • {formatEuro(Number(sub.pricePerCleaning ?? accommodation?.cleaningRate))}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>

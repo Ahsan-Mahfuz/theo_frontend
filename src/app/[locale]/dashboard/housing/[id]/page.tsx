@@ -192,30 +192,45 @@ export default function AccommodationDetailsPage({ params }: { params: Promise<{
                       </Link>
                     </div>
                     <div className="flex flex-col gap-3">
-                      {cleaners.map((row) => (
-                        <div key={row.assignmentId} className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 ring-1 ring-gray-100">
-                              <AppImage
-                                src={resolveAssetUrl(row.cleaner?.profileImage) || avatarFor(cleanerName(row.cleaner))}
-                                alt={cleanerName(row.cleaner)}
-                                fill
-                                className="object-cover"
-                                placeholderSrc={AVATAR_PLACEHOLDER}
-                              />
+                      {cleaners.map((row) => {
+                        const price = row.pricePerCleaning ?? accommodation.cleaningRate;
+                        const formattedPrice = price != null && !isNaN(Number(price)) ? formatEuro(Number(price)) : null;
+
+                        return (
+                          <div key={row.assignmentId} className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 ring-1 ring-gray-100">
+                                <AppImage
+                                  src={resolveAssetUrl(row.cleaner?.profileImage) || avatarFor(cleanerName(row.cleaner))}
+                                  alt={cleanerName(row.cleaner)}
+                                  fill
+                                  className="object-cover"
+                                  placeholderSrc={AVATAR_PLACEHOLDER}
+                                />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[13px] font-bold text-gray-900 truncate">{cleanerName(row.cleaner)}</span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[10px] text-gray-400 uppercase tracking-wider shrink-0">
+                                    {row.role === 'primary' ? t('primary') : t('substitutes')}
+                                  </span>
+                                  {formattedPrice && (
+                                    <>
+                                      <span className="text-[10px] text-gray-300 shrink-0">•</span>
+                                      <span className="text-[11px] font-bold text-gray-900 shrink-0">
+                                        {formattedPrice}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-[13px] font-bold text-gray-900 truncate">{cleanerName(row.cleaner)}</span>
-                              <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-                                {row.role === 'primary' ? t('primary') : t('substitutes')}
-                              </span>
-                            </div>
+                            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 ${STATUS_STYLE[row.status] ?? STATUS_STYLE.pending}`}>
+                              {statusLabel(row.status)}
+                            </span>
                           </div>
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 ${STATUS_STYLE[row.status] ?? STATUS_STYLE.pending}`}>
-                            {statusLabel(row.status)}
-                          </span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <p className="text-[12px] text-gray-500 mt-4">{t('scheduleHint')}</p>
                     <div className="mt-auto pt-6 flex flex-col gap-3">

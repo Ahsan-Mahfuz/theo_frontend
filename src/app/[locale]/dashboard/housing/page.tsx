@@ -69,13 +69,15 @@ function Stat({
   );
 }
 
-// A single assigned-cleaner row: avatar + name + role + status pill.
+// A single assigned-cleaner row: avatar + name + role + price + status pill.
 function CleanerRow({
   item,
   roleLabel,
+  accommodationCleaningRate,
 }: {
   item: AssignedCleaner;
   roleLabel: string;
+  accommodationCleaningRate?: number | null;
 }) {
   const t = useTranslations('Housing.list');
   const fallback = t('cleanerFallback');
@@ -85,6 +87,9 @@ function CleanerRow({
       : item.status === 'refused'
         ? t('cleanerRefused')
         : t('cleanerPending');
+
+  const price = item.pricePerCleaning ?? accommodationCleaningRate;
+  const formattedPrice = price != null && !isNaN(Number(price)) ? formatEuro(Number(price)) : null;
 
   return (
     <div className="flex items-center gap-2.5">
@@ -101,9 +106,19 @@ function CleanerRow({
         <span className="text-[11px] font-bold text-gray-900 truncate leading-tight">
           {cleanerName(item.cleaner, fallback)}
         </span>
-        <span className="text-[9px] text-gray-400 uppercase tracking-wider leading-tight">
-          {roleLabel}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap leading-tight mt-0.5">
+          <span className="text-[9px] text-gray-400 uppercase tracking-wider shrink-0">
+            {roleLabel}
+          </span>
+          {formattedPrice && (
+            <>
+              <span className="text-[9px] text-gray-300 shrink-0">•</span>
+              <span className="text-[10px] font-bold text-gray-800 shrink-0">
+                {formattedPrice}
+              </span>
+            </>
+          )}
+        </div>
       </div>
       <span
         className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0 ${STATUS_STYLES[item.status]}`}
@@ -205,10 +220,10 @@ function HousingCard({ acc }: { acc: Accommodation }) {
                 </span>
               </div>
               {primaries.map((item) => (
-                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('primary')} />
+                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('primary')} accommodationCleaningRate={acc.cleaningRate} />
               ))}
               {substitutes.map((item) => (
-                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('substitutes')} />
+                <CleanerRow key={item.assignmentId} item={item} roleLabel={t('substitutes')} accommodationCleaningRate={acc.cleaningRate} />
               ))}
             </div>
           ) : (
