@@ -413,7 +413,7 @@ export default function PlanningPage() {
     isLoading: accLoading,
     isError: accError,
     error: accErrObj,
-  } = useGetPlanningQuery({ limit: 1000 });
+  } = useGetPlanningQuery({ limit: 10000000 });
   const accList = (accommodations?.data ?? []) as Accommodation[];
 
   useEffect(() => {
@@ -439,7 +439,7 @@ export default function PlanningPage() {
     useGetHostSchedulesQuery(
       {
         accommodationId: selectedAccId,
-        limit: 1000,
+        limit: 10000000,
         view: listFilter === 'all' ? undefined : listFilter,
       },
       { skip: !selectedAccId },
